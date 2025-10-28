@@ -4,17 +4,17 @@ import Header from "@/components/Header";
 import BodyBackground from "@/components/BodyBackground";
 
 export const metadata: Metadata = {
-  title: "Dasol Cho",
+  title: "Photo Portfolio",
   description: "Minimal 90s-style photo portfolio.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body>
+      {/* ✅ 확장프로그램이 body에 붙이는 속성으로 인한 hydration 오차를 무시 */}
+      <body suppressHydrationWarning>
         <Header />
         <BodyBackground />
-        {/* ✅ 전역 전환은 View Transitions로 처리하므로, 단순 main만 유지 */}
         <main className="page">{children}</main>
       </body>
     </html>

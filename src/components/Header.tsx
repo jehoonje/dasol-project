@@ -2,21 +2,22 @@
 
 import { usePathname } from "next/navigation";
 import VTLink from "@/components/VTLink";
+import type { Route } from "next";
 
 const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/articles", label: "Articles" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
-];
+  { href: "/" as Route, label: "Home" },
+  { href: "/articles" as Route, label: "Articles" },
+  { href: "/about" as Route, label: "About" },
+  { href: "/contact" as Route, label: "Contact" },
+] as const;
 
 export default function Header() {
   const pathname = usePathname();
   return (
     <header className="header">
       <div className="header-inner container-60">
-        <VTLink href="/" className="site-title" title="Home">
-        Dasol Cho
+        <VTLink href={"/" as Route} className="site-title" title="Home">
+          Dasol Cho
         </VTLink>
         <nav className="nav">
           {NAV.map((n) => (

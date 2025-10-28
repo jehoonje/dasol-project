@@ -140,3 +140,32 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* 갤러리 기본 그리드 간격도 반응형으로 살짝 업그레이드 */
 .grid { display:grid; gap: var(--grid-gap); grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); }
+
+/* 페이지 섹션 공통 여백 */
+.page-section { margin: clamp(24px, 6vw, 64px) 0; }
+
+/* 90s 모노톤 카드 */
+.card {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: clamp(16px, 4vw, 24px);
+}
+
+/* 보조 텍스트 */
+.muted { color: #6b7280; }
+
+/* 단순 인풋/버튼(이미 정의돼 있으면 중복 추가 불필요) */
+.input {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 8px 10px;
+}
+.button {
+  display: inline-block;
+  border: 1px solid #111;
+  background: #fff;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.button.primary { background: #111; color: #fff; }
