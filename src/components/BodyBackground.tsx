@@ -8,31 +8,25 @@ export default function BodyBackground() {
   const pathname = usePathname();
   const isHome = pathname === "/";
   const bgUrl = useUIStore((s) => s.backgroundImageUrl);
+  const setBg = useUIStore((s) => s.setBackgroundImageUrl);
 
+  // 홈 첫 진입/새로고침 시 서버 저장된 최신 배경 URL 불러오기
   useEffect(() => {
-    const el = document.body;
-
-    if (isHome && bgUrl) {
-      el.style.backgroundImage = `url(${bgUrl})`;
-      el.style.backgroundSize = "cover";
-      el.style.backgroundPosition = "center";
-      el.style.backgroundRepeat = "no-repeat";
-    } else {
-      // Home이 아니거나 bgUrl이 없으면 즉시 원복
-      el.style.backgroundImage = "none";
-      el.style.backgroundSize = "";
-      el.style.backgroundPosition = "";
-      el.style.backgroundRepeat = "";
+    if (!isHome) return;
+    if (!bgUrl) {
+      fetch("/api/background")
+        .then((r) => r.json())
+        .then(({ url }) => { if (url) setBg(url); })
+        .catch(() => {});
     }
+  }, [isHome, bgUrl, setBg]);
 
-    // 컴포넌트 언마운트 시에도 확실히 원복
-    return () => {
-      el.style.backgroundImage = "none";
-      el.style.backgroundSize = "";
-      el.style.backgroundPosition = "";
-      el.style.backgroundRepeat = "";
-    };
-  }, [isHome, bgUrl]);
+  // 홈일 때만 백그라운드 레이어 표시
+  if (!isHome || !bgUrl) return null;
 
-  return null;
+  return (
+    <div id="home-bg-layer" aria-hidden="true">
+      <img src={bgUrl} alt="" />
+    </div>
+  );
 }

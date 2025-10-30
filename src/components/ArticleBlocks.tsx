@@ -20,15 +20,37 @@ export default function ArticleBlocks({ blocks }: { blocks: ArticleBlock[] }) {
         if (b.block_type === "text_image") {
           return (
             <div key={b.id} className="block-center text-image-block">
-              <div className="text-image-grid">
-                {/* 좌측: 텍스트(가운데 정렬, 카드 스타일) */}
-                <div className="text-panel">
+              <div
+                className="text-image-grid"
+                style={{
+                  display: "grid",
+                  // 모바일 포함 항상 2열 유지 (좌 텍스트가 살짝 더 넓게)
+                  gridTemplateColumns: "minmax(140px, 1.2fr) minmax(140px, 1fr)",
+                  gap: 12,
+                  alignItems: "stretch",
+                }}
+              >
+                {/* 좌측: 텍스트 */}
+                <div className="text-panel" style={{ display: "grid", placeItems: "center" }}>
                   <div style={{ whiteSpace: "pre-wrap" }}>{b.text_content}</div>
                 </div>
+        
                 {/* 우측: 이미지 */}
                 <div className="image-panel">
                   {b.image_url ? (
-                    <img src={b.image_url} alt="" />
+                    <img
+                      src={b.image_url}
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",  // 세로가 길어도 카드 안에 꽉 차게
+                        display: "block",
+                        border: "1px solid #eee",
+                        background: "#fff",
+                      }}
+                      loading="lazy"
+                    />
                   ) : (
                     <div style={{ padding: 16, textAlign: "center" }}>이미지 없음</div>
                   )}

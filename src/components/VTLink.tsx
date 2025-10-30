@@ -1,35 +1,24 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
-import type { Route } from "next"; // ✅ typedRoutes 대응
+import type { Route } from "next";
+import { useRouteTransition } from "@/components/RouteTransition";
 
 type Props = Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
-  href: Route; // ✅ string 대신 Route
+  href: Route;
 };
 
 export default function VTLink({ href, onClick, ...rest }: Props) {
-  const router = useRouter();
+  const { navigate } = useRouteTransition();
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     onClick?.(e);
     if (e.defaultPrevented) return;
-
-    // 새 탭/중클릭/수정키는 기본 동작 유지
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-    // 내부 이동만 가로채기
-    if (!href.startsWith("/")) return;
+    if (!href.startsWith("/")) return; // 외부 링크는 통과
 
     e.preventDefault();
-    const navigate = () => router.push(href); // ✅ Route 타입으로 안전
-
-    const anyDoc: any = document;
-    if (anyDoc.startViewTransition) {
-      anyDoc.startViewTransition(navigate);
-    } else {
-      navigate();
-    }
+    navigate(href); // ← 타입 안전, 우리 전환만 사용
   };
 
   return <a href={href} onClick={handleClick} {...rest} />;

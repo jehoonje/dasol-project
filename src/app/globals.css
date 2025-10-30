@@ -169,3 +169,47 @@ img { max-width: 100%; height: auto; display: block; }
   cursor: pointer;
 }
 .button.primary { background: #111; color: #fff; }
+
+/* 앱 콘텐츠가 배경 위에 오도록 보장 */
+.app-root { position: relative; z-index: 1; }
+
+/* 홈 배경 고정 레이어 (모바일 안정화) */
+#home-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;          /* 클릭 방해 X */
+  /* iOS 모바일 주소창 높이 변화 대응 */
+  height: 100dvh;
+  width: 100vw;
+}
+#home-bg-layer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;             /* 가운데 채우기 */
+  display: block;
+}
+
+/* 기본 바탕 (배경이 없을 때 흰색) */
+html, body { background: #fff; }
+
+/* 새/현재 페이지를 감싸는 엘리먼트에 data-page를 붙였다고 가정 */
+[data-page] { will-change: opacity; }
+
+@keyframes rt-fade-out { from {opacity:1} to {opacity:0} }
+@keyframes rt-fade-in  { from {opacity:0} to {opacity:1} }
+
+body[data-route="leaving"]  [data-page] { animation: rt-fade-out .4s linear both; }
+body[data-route="entering"] [data-page] { animation: rt-fade-in  .4s linear both; }
+body[data-route="idle"]     [data-page] { opacity: 1; }
+
+/* 마우스가 있는 환경에서만 hover 활성화 */
+@media (hover: hover) and (pointer: fine) {
+  .patterned-block .masonry-img {
+    transition: transform 160ms ease-out;
+    will-change: transform;
+  }
+  .patterned-block .masonry-img:hover {
+    transform: scale(1.03);
+  }
+}

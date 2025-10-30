@@ -96,6 +96,7 @@ export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
               <img
                 src={img.image_url}
                 alt=""
+                className="masonry-img"
                 style={{ width: "100%", height: "auto", display: "block" }}
                 loading="lazy"
                 onLoad={recalcSpans}

@@ -39,21 +39,28 @@ export default function ArticlesPage() {
 
       {loading && <p>불러오는 중…</p>}
 
-      <div className="list">
-        {items.map((a) => (
-          <div key={a.id} className="article-card">
-            <VTLink href={`/articles/${a.id}` as Route}>
-              <h2 className="article-title">{a.title}</h2>
-              {a.cover_image_url ? (
-                <img src={a.cover_image_url} alt={a.title} />
-              ) : (
-                <div className="border border-gray-200 p-4 text-center">대표 이미지 없음</div>
-              )}
-            </VTLink>
+      <div className="list" data-nopreview="true">
+  {items.map((a) => (
+    <div key={a.id} className="article-card">
+      <VTLink href={`/articles/${a.id}` as Route} data-nopreview="true">
+        <h2 className="article-title">{a.title}</h2>
+        {a.cover_image_url ? (
+          <div className="thumb">
+            <img
+              src={a.cover_image_url}
+              alt={a.title}
+              loading="lazy"
+              decoding="async"
+              data-nopreview="true"
+            />
           </div>
-        ))}
-        {!loading && items.length === 0 && <p>아직 게시글이 없습니다. 상단의 [+]로 추가해 보세요.</p>}
-      </div>
+        ) : (
+          <div className="thumb thumb--empty">대표 이미지 없음</div>
+        )}
+      </VTLink>
+    </div>
+  ))}
+</div>
     </div>
   );
 }
