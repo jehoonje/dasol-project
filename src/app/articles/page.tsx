@@ -30,7 +30,7 @@ export default function ArticlesPage() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="container-60">
+    <div className="container-90">
       <div className="plus-row">
         <ArticleCreateButton onCreated={load} />
       </div>
@@ -39,28 +39,28 @@ export default function ArticlesPage() {
 
       {loading && <p></p>}
 
-      <div className="list" data-nopreview="true">
-  {items.map((a) => (
-    <div key={a.id} className="article-card">
-      <VTLink href={`/articles/${a.id}` as Route} data-nopreview="true">
-        <h2 className="article-title">{a.title}</h2>
-        {a.cover_image_url ? (
-          <div className="thumb">
-            <img
-              src={a.cover_image_url}
-              alt={a.title}
-              loading="lazy"
-              decoding="async"
-              data-nopreview="true"
-            />
+      <div className="articles-grid" data-nopreview="true">
+        {items.map((a) => (
+          <div key={a.id} className="article-card">
+            <VTLink href={`/articles/${a.id}` as Route} data-nopreview="true">
+              <h2 className="article-title">{a.title}</h2>
+              {a.cover_image_url ? (
+                <div className="thumb">
+                  <img
+                    src={a.cover_image_url}
+                    alt={a.title}
+                    loading="lazy"
+                    decoding="async"
+                    data-nopreview="true"
+                  />
+                </div>
+              ) : (
+                <div className="thumb thumb--empty">대표 이미지 없음</div>
+              )}
+            </VTLink>
           </div>
-        ) : (
-          <div className="thumb thumb--empty">대표 이미지 없음</div>
-        )}
-      </VTLink>
-    </div>
-  ))}
-</div>
+        ))}
+      </div>
     </div>
   );
 }

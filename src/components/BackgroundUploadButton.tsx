@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Modal from "./Modal";
 import { useUIStore } from "../app/store/useUIStore";
 
@@ -26,8 +26,21 @@ export default function BackgroundUploadButton() {
       const url = json.publicUrl as string | null;
       if (!url) throw new Error("publicUrl not available (bucket public 여부 확인)");
 
+      // Zustand 스토어 업데이트
       setBg(url);
-      try { localStorage.setItem("bgUrl", url); } catch {}
+      
+      // localStorage에 저장
+      try { 
+        localStorage.setItem("bgUrl", url); 
+      } catch {}
+
+      // 서버에도 저장 (다른 기기 동기화용)
+      await fetch("/api/background", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      }).catch(console.error);
+
       setOpen(false);
       setFile(null);
     } catch (e: any) {
@@ -38,16 +51,9 @@ export default function BackgroundUploadButton() {
     }
   };
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("bgUrl");
-      if (saved) setBg(saved);
-    } catch {}
-  }, [setBg]);
-
   return (
     <>
-      <button className="button" onClick={() => setOpen(true)}>
+      <button className="button relative top-60" onClick={() => setOpen(true)}>
         배경 이미지 추가
       </button>
 

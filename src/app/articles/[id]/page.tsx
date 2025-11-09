@@ -39,11 +39,11 @@ export default function ArticleDetailPage() {
 
   useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [id]);
 
-  if (loading) return <div className="container-60"><p>불러오는 중…</p></div>;
-  if (!article) return <div className="container-60"><h1>게시글을 찾을 수 없습니다.</h1></div>;
+  if (loading) return <div className="container-90"><p>불러오는 중…</p></div>;
+  if (!article) return <div className="container-90"><h1>게시글을 찾을 수 없습니다.</h1></div>;
 
   return (
-    <div className="container-60">
+    <div className="container-90">
       <div className="flex mb-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h1 className="mt-2 mb-2">{article.title}</h1>
         <BlockAddButton articleId={article.id} onAdded={load} />
