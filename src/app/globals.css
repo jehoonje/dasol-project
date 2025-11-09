@@ -41,10 +41,10 @@ img { max-width: 100%; height: auto; display: block; }
   position: fixed; inset: 0; background: rgba(0,0,0,0.4);
   display: flex; align-items: center; justify-content: center; z-index: 50;
 }
-.modal-content { background: #fff; color: #333; border: 1px solid #ccc; width: 92%; max-width: 520px; padding: 16px; }
+.modal-content { background: #fff; color: #333; border: 0px solid #ccc; width: 92%; max-width: 520px; padding: 16px; }
 .modal-header { font-weight: 700; margin-bottom: 12px; }
 .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-.input, .button, .file { border: 1px solid #bbb; padding: 6px 8px; background: #f9f9f9; font: inherit; }
+.input, .button, .file { border: 0px solid #bbb; padding: 6px 8px; background: #f9f9f9; font: inherit; }
 .button { cursor: pointer; }
 .button.primary { background: #111; color: #fff; border-color: #111; }
 .button.ghost { background: #fff; }
@@ -105,7 +105,7 @@ img { max-width: 100%; height: auto; display: block; }
   max-width: var(--container-max);
   text-align:center;
   padding: var(--text-block-pad-y) var(--text-block-pad-x);
-  border: 1px solid #e5e7eb;
+  border: 0px solid #e5e7eb;
   background:#fff;
   line-height: 1.75;
 }
@@ -124,7 +124,7 @@ img { max-width: 100%; height: auto; display: block; }
 .text-panel{
   display:flex; align-items:center; justify-content:center; text-align:center;
   padding: var(--text-block-pad-y) var(--text-block-pad-x);
-  border:1px solid #e5e7eb; background:#fff;
+  border:0px solid #e5e7eb; background:#fff;
 }
 .image-panel{ border:1px solid #eee; background:#fff; }
 .image-panel img{ width:100%; height:auto; display:block; }
@@ -146,7 +146,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* 90s 모노톤 카드 */
 .card {
-  border: 1px solid #e5e7eb;
+  border: 0px solid #e5e7eb;
   background: #fff;
   padding: clamp(16px, 4vw, 24px);
 }
@@ -157,13 +157,13 @@ img { max-width: 100%; height: auto; display: block; }
 /* 단순 인풋/버튼(이미 정의돼 있으면 중복 추가 불필요) */
 .input {
   width: 100%;
-  border: 1px solid #e5e7eb;
+  border: 0px solid #e5e7eb;
   background: #fff;
   padding: 8px 10px;
 }
 .button {
   display: inline-block;
-  border: 1px solid #111;
+  border: 0px solid #111;
   background: #fff;
   padding: 6px 12px;
   cursor: pointer;

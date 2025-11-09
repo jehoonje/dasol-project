@@ -49,7 +49,9 @@ export default function ArticleDetailPage() {
         <BlockAddButton articleId={article.id} onAdded={load} />
       </div>
 
+      <div className="pb-[30%]" style={{}}>
       <ArticleBlocks blocks={blocks} />
+      </div>
     </div>
   );
 }

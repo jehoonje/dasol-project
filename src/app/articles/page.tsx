@@ -37,7 +37,7 @@ export default function ArticlesPage() {
 
       <h1 className="mt-2 mb-4">Articles</h1>
 
-      {loading && <p>불러오는 중…</p>}
+      {loading && <p></p>}
 
       <div className="list" data-nopreview="true">
   {items.map((a) => (
