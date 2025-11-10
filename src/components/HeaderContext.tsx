@@ -33,13 +33,24 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // 모바일에서 배경 애니메이션 관리
   useEffect(() => {
-    if (mounted && isMobile && !isClicked && isRootPage) {
-      const bgLayer = document.getElementById("home-bg-layer");
-      if (bgLayer) {
-        bgLayer.classList.add("floating");
-        bgLayer.classList.remove("stopped");
-      }
+    if (!mounted || !isRootPage) return;
+    
+    const bgLayer = document.getElementById("home-bg-layer");
+    if (!bgLayer) return;
+
+    if (isMobile && !isClicked) {
+      // 모바일에서 클릭 전: floating 애니메이션
+      bgLayer.classList.add("floating");
+      bgLayer.classList.remove("stopped");
+    } else if (isMobile && isClicked) {
+      // 모바일에서 클릭 후: 애니메이션 정지
+      bgLayer.classList.remove("floating");
+      bgLayer.classList.add("stopped");
+    } else {
+      // 데스크탑: 클래스 제거
+      bgLayer.classList.remove("floating", "stopped");
     }
   }, [mounted, isMobile, isClicked, isRootPage]);
 
@@ -57,11 +68,6 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const handleClick = () => {
     if (isMobile && !isClicked && isRootPage) {
       setIsClicked(true);
-      const bgLayer = document.getElementById("home-bg-layer");
-      if (bgLayer) {
-        bgLayer.classList.remove("floating");
-        bgLayer.classList.add("stopped");
-      }
     }
   };
 

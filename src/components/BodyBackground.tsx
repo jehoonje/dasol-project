@@ -17,16 +17,20 @@ export default function BodyBackground() {
     // 1. 먼저 localStorage 확인 (빠른 로딩)
     try {
       const saved = localStorage.getItem("bgUrl");
-      if (saved && !bgUrl) {
+      console.log("[BodyBackground] localStorage bgUrl:", saved); // 디버깅
+      if (saved) {
         setBg(saved);
       }
-    } catch {}
+    } catch (e) {
+      console.error("[BodyBackground] localStorage error:", e);
+    }
 
     // 2. 서버에서 최신 데이터 가져오기 (항상 실행하여 동기화)
     fetch("/api/background")
       .then((r) => r.json())
       .then(({ url }) => { 
-        if (url && url !== bgUrl) {
+        console.log("[BodyBackground] API response url:", url); // 디버깅
+        if (url) {
           setBg(url);
           // localStorage도 업데이트
           try {
@@ -34,15 +38,24 @@ export default function BodyBackground() {
           } catch {}
         }
       })
-      .catch(() => {});
-  }, [isHome, setBg]); // bgUrl 의존성 제거
+      .catch((err) => {
+        console.error("[BodyBackground] API error:", err);
+      });
+  }, [isHome, setBg]); // bgUrl 의존성 제거 유지
 
   // 홈일 때만 백그라운드 레이어 표시
+  console.log("[BodyBackground] Render - isHome:", isHome, "bgUrl:", bgUrl); // 디버깅
+  
   if (!isHome || !bgUrl) return null;
 
   return (
     <div id="home-bg-layer" aria-hidden="true">
-      <img src={bgUrl} alt="" />
+      <img 
+        src={bgUrl} 
+        alt="" 
+        onLoad={() => console.log("[BodyBackground] Image loaded")}
+        onError={(e) => console.error("[BodyBackground] Image error:", bgUrl)}
+      />
     </div>
   );
 }

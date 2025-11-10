@@ -19,32 +19,67 @@ export default function BackgroundUploadButton() {
       fd.append("file", file);
       fd.append("path", `home/${Date.now()}_${file.name}`);
 
+      console.log("[Upload] Starting upload...");
       const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.error ?? "upload failed");
+      
+      // 응답 텍스트 먼저 확인
+      const text = await res.text();
+      console.log("[Upload] Response status:", res.status);
+      console.log("[Upload] Response text:", text);
+
+      let json;
+      try {
+        json = JSON.parse(text);
+      } catch (parseError) {
+        console.error("[Upload] JSON parse error:", parseError);
+        throw new Error(`서버 응답 파싱 실패: ${text.substring(0, 100)}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(json?.error ?? `업로드 실패 (${res.status})`);
+      }
 
       const url = json.publicUrl as string | null;
-      if (!url) throw new Error("publicUrl not available (bucket public 여부 확인)");
+      if (!url) {
+        throw new Error("publicUrl not available (bucket public 여부 확인)");
+      }
+
+      console.log("[Upload] Success! URL:", url);
 
       // Zustand 스토어 업데이트
       setBg(url);
       
       // localStorage에 저장
       try { 
-        localStorage.setItem("bgUrl", url); 
-      } catch {}
+        localStorage.setItem("bgUrl", url);
+        console.log("[Upload] Saved to localStorage");
+      } catch (e) {
+        console.error("[Upload] localStorage error:", e);
+      }
 
       // 서버에도 저장 (다른 기기 동기화용)
-      await fetch("/api/background", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      }).catch(console.error);
+      try {
+        const bgRes = await fetch("/api/background", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+        
+        if (bgRes.ok) {
+          console.log("[Upload] Saved to database");
+        } else {
+          console.warn("[Upload] DB save failed but continuing");
+        }
+      } catch (dbError) {
+        console.error("[Upload] DB save error:", dbError);
+        // DB 저장 실패해도 계속 진행
+      }
 
       setOpen(false);
       setFile(null);
+      alert("배경 이미지가 성공적으로 업로드되었습니다!");
     } catch (e: any) {
-      console.error(e);
+      console.error("[Upload] Error:", e);
       alert(`업로드 실패: ${e?.message ?? e}`);
     } finally {
       setLoading(false);

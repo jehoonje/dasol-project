@@ -1,12 +1,14 @@
-"use client";
 import { create } from "zustand";
 
-type UIState = {
+interface UIStore {
   backgroundImageUrl: string | null;
   setBackgroundImageUrl: (url: string | null) => void;
-};
+}
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIStore>((set) => ({
   backgroundImageUrl: null,
-  setBackgroundImageUrl: (url) => set({ backgroundImageUrl: url }),
+  setBackgroundImageUrl: (url) => {
+    console.log("[useUIStore] Setting bgUrl:", url); // 디버깅
+    set({ backgroundImageUrl: url });
+  },
 }));

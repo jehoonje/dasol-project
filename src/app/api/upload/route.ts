@@ -1,26 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// 업로드는 서버에서 "service_role"로 실행 → RLS 우회
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!, // 서버 전용
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export const runtime = "nodejs"; // 파일 업로드는 Node 런타임이 안정적
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
+    console.log("[Upload API] Request received");
+    
     const form = await req.formData();
 
     const bucket = form.get("bucket");
     const file = form.get("file") as File | null;
     let path = form.get("path") as string | null;
 
+    console.log("[Upload API] Bucket:", bucket);
+    console.log("[Upload API] File:", file?.name, file?.size);
+    console.log("[Upload API] Path:", path);
+
     if (!bucket || typeof bucket !== "string") {
+      console.error("[Upload API] Bucket missing or invalid");
       return NextResponse.json({ error: "bucket is required" }, { status: 400 });
     }
     if (!file) {
+      console.error("[Upload API] File missing");
       return NextResponse.json({ error: "file is required" }, { status: 400 });
     }
 
@@ -29,23 +36,31 @@ export async function POST(req: NextRequest) {
       path = `uploads/${Date.now()}_${file.name}`;
     }
 
+    console.log("[Upload API] Uploading to Supabase...");
+
     // 업로드 (서비스 롤 → RLS 무시)
     const { data, error } = await supabaseAdmin.storage
       .from(bucket)
       .upload(path, file, { upsert: false });
 
     if (error) {
+      console.error("[Upload API] Supabase upload error:", error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    console.log("[Upload API] Upload successful:", data.path);
+
     // 공개 URL (버킷이 public일 때)
     const { data: pub } = supabaseAdmin.storage.from(bucket).getPublicUrl(data.path);
+
+    console.log("[Upload API] Public URL:", pub.publicUrl);
 
     return NextResponse.json({
       path: data.path,
       publicUrl: pub.publicUrl ?? null,
     });
   } catch (e: any) {
+    console.error("[Upload API] Unexpected error:", e);
     return NextResponse.json({ error: e?.message ?? String(e) }, { status: 500 });
   }
 }
