@@ -64,11 +64,11 @@ export default function ArticleDetailPage() {
     }
   };
 
-  if (loading) return <div className="container-90"><p>불러오는 중…</p></div>;
-  if (!article) return <div className="container-90"><h1>게시글을 찾을 수 없습니다.</h1></div>;
+  if (loading) return <div className="container-90" style={{ paddingTop: "80px" }}><p>불러오는 중…</p></div>;
+  if (!article) return <div className="container-90" style={{ paddingTop: "80px" }}><h1>게시글을 찾을 수 없습니다.</h1></div>;
 
   return (
-    <div className="container-90" style={{ position: "relative" }}>
+    <div className="container-90" style={{ position: "relative", paddingTop: "80px" }}>
       {isOwner && (
         <button
           onClick={handleDelete}

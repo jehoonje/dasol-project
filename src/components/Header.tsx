@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import type { Route } from "next";
 import VTLink from "../components/VTLink";
 import { useHeader } from "./HeaderContext";
@@ -14,10 +15,14 @@ const NAV = [
 ];
 
 export default function Header() {
+  const pathname = usePathname();
+  const router = useRouter();
   const { shouldShow, categoryClicked, handleCategoryClick, handleHomeClick } = useHeader();
   const { user, isOwner, checkAuth, signOut } = useAuthStore();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const isRootPage = pathname === "/";
 
   // 컴포넌트 마운트 시 인증 상태 확인
   useEffect(() => {
@@ -28,12 +33,16 @@ export default function Header() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (user) {
-      // 로그인된 상태: 로그아웃 확인
-      setShowLogoutConfirm(true);
+    if (isRootPage) {
+      // 루트 페이지: 로그인/로그아웃 동작
+      if (user) {
+        setShowLogoutConfirm(true);
+      } else {
+        setIsLoginModalOpen(true);
+      }
     } else {
-      // 로그인되지 않은 상태: 로그인 모달 표시
-      setIsLoginModalOpen(true);
+      // 다른 페이지: 홈으로 이동
+      router.push("/");
     }
   };
 

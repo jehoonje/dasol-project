@@ -37,7 +37,7 @@ export default function ArticlesPage() {
   useEffect(() => { load(); }, []);
 
   return (
-    <div className="container-90">
+    <div className="container-90" style={{ paddingTop: "80px" }}>
       {isOwner && (
         <div className="plus-row">
           <ArticleCreateButton onCreated={load} />
