@@ -11,8 +11,6 @@ interface AuthState {
   checkAuth: () => Promise<void>;
 }
 
-const OWNER_EMAIL = process.env.NEXT_PUBLIC_OWNER_EMAIL || "owner@example.com";
-
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isOwner: false,
@@ -36,8 +34,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       console.log("로그인 성공:", data.user?.email);
-      const isOwner = data.user?.email === OWNER_EMAIL;
-      set({ user: data.user, isOwner });
+      // 로그인만 성공하면 owner 권한 부여
+      set({ user: data.user, isOwner: true });
     } catch (error) {
       console.error("로그인 실패:", error);
       throw error;
@@ -60,7 +58,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      const isOwner = user?.email === OWNER_EMAIL;
+      // 로그인되어 있으면 owner 권한 부여
+      const isOwner = !!user;
       set({ user, isOwner, isLoading: false });
     } catch (error) {
       console.error("인증 확인 실패:", error);
