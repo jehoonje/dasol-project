@@ -128,23 +128,39 @@ img { max-width: 100%; height: auto; display: block; }
 .button.primary { background: #111; color: #fff; border-color: #111; }
 .button.ghost { background: #fff; }
 
-/* ===== View Transitions: 빠른 전환 (0.15s) ===== */
+/* ===== View Transitions: 초고속 전환 (0.12s) ===== */
 
 /* 메인 컨테이너만 전환 대상 (헤더는 고정) */
 .page { view-transition-name: page; }
 
-/* 기본 키프레임 */
-@keyframes vt-fade-out { to { opacity: 0; } }
-@keyframes vt-fade-in  { from { opacity: 0; } to { opacity: 1; } }
-
-/* 이전 화면: 0.15초 페이드아웃 */
-:root::view-transition-old(page) {
-  animation: vt-fade-out 0.15s ease-out both;
+/* GPU 가속을 위한 키프레임 최적화 */
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+}
+@keyframes vt-fade-in  {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* 새 화면: 이전 화면이 끝난 뒤 0.15초 페이드인 */
+/* 이전 화면: 0.12초 페이드아웃 */
+:root::view-transition-old(page) {
+  animation: vt-fade-out 0.12s cubic-bezier(0.4, 0, 1, 1) both;
+  will-change: opacity, transform;
+}
+
+/* 새 화면: 이전 화면이 끝난 뒤 0.12초 페이드인 */
 :root::view-transition-new(page) {
-  animation: vt-fade-in 0.15s ease-in 0.15s both;
+  animation: vt-fade-in 0.12s cubic-bezier(0, 0, 0.2, 1) 0.12s both;
+  will-change: opacity, transform;
 }
 
 /* 헤더는 전환에서 제외 */

@@ -4,8 +4,8 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { usePathname, useRouter } from "next/navigation";
 
 type Phase = "idle" | "leaving" | "entering";
-const LEAVE_MS = 150; // 0.4초 → 0.15초
-const ENTER_MS = 150; // 0.4초 → 0.15초
+const LEAVE_MS = 120; // CSS 애니메이션과 동기화 (0.12s)
+const ENTER_MS = 120; // CSS 애니메이션과 동기화 (0.12s)
 
 type HrefArg = Parameters<ReturnType<typeof useRouter>["push"]>[0];
 

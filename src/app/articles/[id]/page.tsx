@@ -1,11 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { supabase } from "../../lib/supabaseClient";
 import type { Article, ArticleBlock } from "../../types";
-import BlockAddButton from "@/components/BlockAddButton";
 import ArticleBlocks from "@/components/ArticleBlocks";
+
+// 편집 버튼은 동적 로드
+const BlockAddButton = dynamic(() => import("@/components/BlockAddButton"), {
+  ssr: false,
+});
 
 export default function ArticleDetailPage() {
   const params = useParams<{ id: string }>();
