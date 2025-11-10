@@ -1,7 +1,12 @@
 "use client";
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import AnimatedImageModal from "./AnimatedImageModal";
+import dynamic from "next/dynamic";
+
+// Framer Motion을 사용하는 무거운 컴포넌트를 동적으로 로드
+const AnimatedImageModal = dynamic(() => import("./AnimatedImageModal"), {
+  ssr: false,
+});
 
 type Ctx = {
   open: (src: string, alt?: string) => void;

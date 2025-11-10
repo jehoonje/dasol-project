@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { supabase } from "../lib/supabaseClient";
-import ArticleCreateButton from "@/components/ArticleCreateButton";
 import VTLink from "@/components/VTLink";
 import type { Route } from "next";
+
+// 업로드 버튼은 동적 로드
+const ArticleCreateButton = dynamic(() => import("@/components/ArticleCreateButton"), {
+  ssr: false,
+});
 
 type Article = {
   id: string;

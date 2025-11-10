@@ -1,8 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import BackgroundUploadButton from "../components/BackgroundUploadButton";
+import dynamic from "next/dynamic";
 import { useHeader } from "../components/HeaderContext";
+
+// 업로드 버튼은 일반 사용자에게 필요 없으므로 동적 로드
+const BackgroundUploadButton = dynamic(() => import("../components/BackgroundUploadButton"), {
+  ssr: false,
+});
 
 export default function HomePage() {
   const pathname = usePathname();
