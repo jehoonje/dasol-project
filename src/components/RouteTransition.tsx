@@ -4,10 +4,9 @@ import React, { createContext, useCallback, useContext, useEffect, useRef, useSt
 import { usePathname, useRouter } from "next/navigation";
 
 type Phase = "idle" | "leaving" | "entering";
-const LEAVE_MS = 400; // ← 0.4초
-const ENTER_MS = 400; // ← 0.4초
+const LEAVE_MS = 150; // 0.4초 → 0.15초
+const ENTER_MS = 150; // 0.4초 → 0.15초
 
-// router.push의 첫 번째 인자 타입을 그대로 따오면 Route 타입 플러그인과 호환됩니다.
 type HrefArg = Parameters<ReturnType<typeof useRouter>["push"]>[0];
 
 const Ctx = createContext<{ navigate: (href: HrefArg) => void; phase: Phase }>({
@@ -38,7 +37,7 @@ export default function RouteTransitionProvider({ children }: { children: React.
     setPhase("leaving");
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
-      router.push(href); // ← 타입 안전
+      router.push(href);
     }, LEAVE_MS);
   }, [phase, router]);
 
