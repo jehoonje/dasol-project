@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useHeader } from "../components/HeaderContext";
+import { useAuthStore } from "./store/useAuthStore";
 
 // 업로드 버튼은 일반 사용자에게 필요 없으므로 동적 로드
 const BackgroundUploadButton = dynamic(() => import("../components/BackgroundUploadButton"), {
@@ -12,6 +13,7 @@ const BackgroundUploadButton = dynamic(() => import("../components/BackgroundUpl
 export default function HomePage() {
   const pathname = usePathname();
   const { isMobile, isClicked, shouldShow, handleClick } = useHeader();
+  const isOwner = useAuthStore((state) => state.isOwner);
 
   const isRootPage = pathname === "/";
 
@@ -29,8 +31,8 @@ export default function HomePage() {
         cursor: isMobile && !isClicked && isRootPage ? "pointer" : "default",
       }}
     >
-      {/* 배경 업로드 버튼: 루트 페이지에서만 표시 */}
-      {isRootPage && (
+      {/* 배경 업로드 버튼: 루트 페이지에서 owner만 표시 */}
+      {isRootPage && isOwner && (
         <div
           style={{
             marginTop: "200px",
