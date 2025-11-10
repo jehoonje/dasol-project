@@ -1,6 +1,6 @@
 export default function AboutPage() {
   return (
-    <div className="container-90">
+    <div className="container-90" style={{ paddingTop: "80px" }}>
       <section className="page-section">
         <h1>About</h1>
         <div className="card">
