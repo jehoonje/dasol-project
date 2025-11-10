@@ -20,13 +20,22 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signIn: async (email: string, password: string) => {
     try {
+      console.log("로그인 시도:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("로그인 에러 상세:", {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+        });
+        throw error;
+      }
 
+      console.log("로그인 성공:", data.user?.email);
       const isOwner = data.user?.email === OWNER_EMAIL;
       set({ user: data.user, isOwner });
     } catch (error) {
