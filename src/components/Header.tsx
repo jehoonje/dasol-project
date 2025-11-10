@@ -5,9 +5,9 @@ import VTLink from "../components/VTLink";
 import { useHeader } from "./HeaderContext";
 
 const NAV = [
-  { href: "/articles", label: "Articles" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/articles" as Route, label: "Articles" },
+  { href: "/about" as Route, label: "About" },
+  { href: "/contact" as Route, label: "Contact" },
 ];
 
 export default function Header() {
