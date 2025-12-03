@@ -60,14 +60,17 @@ export default function Header() {
         onClick={handleTitleClick}
         style={{
           position: "fixed",
-          top: "24px",
+          top: "20px",
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 100,
-          fontSize: "24px",
-          color: "#222",
-          textShadow: "-3px 0px white, 0px 3px white",
-          fontWeight: 900,
+          fontSize: "22px",
+          fontWeight: 400,
+          letterSpacing: "0.02em",
+          color: "#111",
+          // 배경선 위에서도 또렷하게 보이도록 흰 하이라이트 + 아주 약한 그림자
+          textShadow:
+            "0 0 3px rgba(255,255,255,0.75), 0 1px 2px rgba(0,0,0,0.35)",
           opacity: shouldShow ? 1 : 0,
           pointerEvents: shouldShow ? "auto" : "none",
           transition: "opacity 0.5s ease",
@@ -112,10 +115,14 @@ export default function Header() {
               key={n.href}
               href={n.href}
               style={{
-                fontSize: "36px",
-                color: "#222",
-                textShadow: "-2px 0px white, 0px 2px white",
-                fontWeight: 900,
+                fontSize: "clamp(56px, 5vw, 44px)",   // 모바일~데스크탑 대응
+                fontWeight: 400,
+                letterSpacing: "0.04em",
+                color: "#111",
+                lineHeight: 1.1,
+                // 흰색 아우라로 먼저 띄우고, 아래로 살짝 그림자
+                textShadow:
+                  "0 0 4px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.35)",
               }}
               onClick={handleCategoryClick}
             >

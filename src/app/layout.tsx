@@ -1,5 +1,7 @@
+// app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
+import localFont from "next/font/local";
 import BodyBackground from "@/components/BodyBackground";
 import ImagePreviewProvider from "@/components/ImagePreviewProvider";
 import RouteTransitionProvider from "@/components/RouteTransition";
@@ -11,16 +13,24 @@ export const metadata: Metadata = {
   description: "photo portfolio.",
 };
 
+const satoshi = localFont({
+  src: [
+    {
+      path: "./fonts/Satoshi-Variable.woff2",
+      weight: "300 900",
+      style: "normal",
+    },
+  ],
+  variable: "--font-satoshi",
+  display: "swap",
+});
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="ko" className={satoshi.variable}>
       <body suppressHydrationWarning>
         <BodyBackground />
+        <div id="home-bg-overlay" aria-hidden="true" /> {/* 👈 추가 */}
         <HeaderProvider>
           <RouteTransitionProvider>
             <ImagePreviewProvider>
