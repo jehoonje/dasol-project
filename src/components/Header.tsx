@@ -21,6 +21,7 @@ export default function Header() {
   const { user, isOwner, checkAuth, signOut } = useAuthStore();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   const isRootPage = pathname === "/";
 
@@ -28,6 +29,16 @@ export default function Header() {
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  // 스크롤 감지
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 100);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleTitleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -68,12 +79,11 @@ export default function Header() {
           fontWeight: 400,
           letterSpacing: "0.02em",
           color: "#111",
-          // 배경선 위에서도 또렷하게 보이도록 흰 하이라이트 + 아주 약한 그림자
           textShadow:
             "0 0 3px rgba(255,255,255,0.75), 0 1px 2px rgba(0,0,0,0.35)",
-          opacity: shouldShow ? 1 : 0,
-          pointerEvents: shouldShow ? "auto" : "none",
-          transition: "opacity 0.5s ease",
+          opacity: shouldShow && !scrolled ? 1 : 0,
+          pointerEvents: shouldShow && !scrolled ? "auto" : "none",
+          transition: "opacity 0.3s ease",
           cursor: "pointer",
         }}
       >
@@ -115,12 +125,11 @@ export default function Header() {
               key={n.href}
               href={n.href}
               style={{
-                fontSize: "clamp(56px, 5vw, 44px)",   // 모바일~데스크탑 대응
+                fontSize: "clamp(56px, 5vw, 44px)",
                 fontWeight: 400,
                 letterSpacing: "0.04em",
                 color: "#111",
                 lineHeight: 1.1,
-                // 흰색 아우라로 먼저 띄우고, 아래로 살짝 그림자
                 textShadow:
                   "0 0 4px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.35)",
               }}
@@ -156,7 +165,7 @@ export default function Header() {
             style={{
               backgroundColor: "white",
               padding: "32px",
-              borderRadius: "8px",
+              
               width: "90%",
               maxWidth: "400px",
               boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
@@ -171,7 +180,7 @@ export default function Header() {
                 textAlign: "center",
               }}
             >
-              로그아웃
+              다솔 로그아웃
             </h2>
             <p
               style={{
@@ -180,7 +189,7 @@ export default function Header() {
                 color: "#666",
               }}
             >
-              로그아웃 하시겠습니까?
+              오늘은 여기까지 !
             </p>
             <div style={{ display: "flex", gap: "12px" }}>
               <button
@@ -189,14 +198,14 @@ export default function Header() {
                   flex: 1,
                   padding: "10px",
                   border: "1px solid #ddd",
-                  borderRadius: "4px",
+                  
                   backgroundColor: "white",
                   cursor: "pointer",
                   fontSize: "14px",
                   fontWeight: "600",
                 }}
               >
-                취소
+                cancel
               </button>
               <button
                 onClick={handleLogout}
@@ -204,7 +213,7 @@ export default function Header() {
                   flex: 1,
                   padding: "10px",
                   border: "none",
-                  borderRadius: "4px",
+                  
                   backgroundColor: "#222",
                   color: "white",
                   cursor: "pointer",
@@ -212,7 +221,7 @@ export default function Header() {
                   fontWeight: "600",
                 }}
               >
-                로그아웃
+                confirm
               </button>
             </div>
           </div>
