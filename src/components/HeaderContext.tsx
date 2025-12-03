@@ -54,6 +54,31 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
     }
   }, [mounted, isMobile, isClicked, isRootPage]);
 
+  // 모바일에서 배경 애니메이션 + 오버레이 관리
+useEffect(() => {
+  if (!mounted || !isRootPage) return;
+  
+  const bgLayer = document.getElementById("home-bg-layer");
+  const overlay = document.getElementById("home-bg-overlay");
+  if (!bgLayer) return;
+
+  if (isMobile && !isClicked) {
+    // 모바일에서 클릭 전: floating 애니메이션, 오버레이 숨김
+    bgLayer.classList.add("floating");
+    bgLayer.classList.remove("stopped");
+    overlay?.classList.remove("visible");
+  } else if (isMobile && isClicked) {
+    // 모바일에서 클릭 후: 애니메이션 정지, 오버레이 표시
+    bgLayer.classList.remove("floating");
+    bgLayer.classList.add("stopped");
+    overlay?.classList.add("visible"); // 👈 오버레이 페이드인
+  } else {
+    // 데스크탑: 클래스 제거
+    bgLayer.classList.remove("floating", "stopped");
+    overlay?.classList.remove("visible");
+  }
+}, [mounted, isMobile, isClicked, isRootPage]);
+
   useEffect(() => {
     if (isRootPage) {
       setCategoryClicked(false);
