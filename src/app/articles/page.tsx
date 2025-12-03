@@ -44,7 +44,7 @@ export default function ArticlesPage() {
         </div>
       )}
 
-      <h1 className="mt-2 mb-4">Articles</h1>
+      <h1 className="mt-2 mb-4 font-white">.</h1>
 
       {loading && <p></p>}
 

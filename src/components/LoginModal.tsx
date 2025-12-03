@@ -54,7 +54,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         style={{
           backgroundColor: "white",
           padding: "32px",
-          borderRadius: "8px",
+          
           width: "90%",
           maxWidth: "400px",
           boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
@@ -69,7 +69,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             textAlign: "center",
           }}
         >
-          로그인
+          Owner Login
         </h2>
 
         <form onSubmit={handleSubmit}>
@@ -83,7 +83,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 fontWeight: "600",
               }}
             >
-              이메일
+              E-mail
             </label>
             <input
               id="email"
@@ -95,7 +95,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 width: "100%",
                 padding: "8px 12px",
                 border: "1px solid #ddd",
-                borderRadius: "4px",
+                
                 fontSize: "14px",
               }}
             />
@@ -111,7 +111,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 fontWeight: "600",
               }}
             >
-              비밀번호
+              Password
             </label>
             <input
               id="password"
@@ -123,7 +123,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 width: "100%",
                 padding: "8px 12px",
                 border: "1px solid #ddd",
-                borderRadius: "4px",
+                
                 fontSize: "14px",
               }}
             />
@@ -150,7 +150,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 flex: 1,
                 padding: "10px",
                 border: "1px solid #ddd",
-                borderRadius: "4px",
+                
                 backgroundColor: "white",
                 cursor: "pointer",
                 fontSize: "14px",
@@ -166,7 +166,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 flex: 1,
                 padding: "10px",
                 border: "none",
-                borderRadius: "4px",
+                
                 backgroundColor: "#222",
                 color: "white",
                 cursor: isLoading ? "not-allowed" : "pointer",

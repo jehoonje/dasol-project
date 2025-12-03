@@ -103,7 +103,7 @@ export default function ArticleDetailPage() {
       )}
 
       <div className="flex mb-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1 className="mt-2 mb-2">{article.title}</h1>
+        {/* <h1 className="mt-2 mb-2">{article.title}</h1> */}
         {isOwner && <BlockAddButton articleId={article.id} onAdded={load} />}
       </div>
 
