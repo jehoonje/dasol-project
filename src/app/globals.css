@@ -1,12 +1,13 @@
 @import "tailwindcss";
 
+
 /* 90s HTML 모노톤, @apply 없이 일반 CSS로 처리 */
 html, body { height: 100%; margin: 0; padding: 0; }
 body {
   background: #ffffff;
   color: #333333;
   line-height: 1.625;
-  font-family: var(--font-satoshi), -apple-system, BlinkMacSystemFont,
+  font-family: var(--font-pyeojin), -apple-system, BlinkMacSystemFont,
   "Segoe UI", "Roboto", sans-serif;
 }
 a { text-decoration: none; color: inherit; }
@@ -286,17 +287,32 @@ img { max-width: 100%; height: auto; display: block; }
 #home-bg-layer {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: -2;
   pointer-events: none;
-  height: 100dvh;
-  width: 100vw;
+  
+  /* 진입 시 바로 페이드인 */
+  animation: fadeInBg 0.8s ease-out forwards;
 }
+
+
 #home-bg-layer img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
+/* 페이드인 애니메이션 */
+@keyframes fadeInBg {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+
 
 /* 기본 바탕 (배경이 없을 때 흰색) */
 html, body { background: #fff; }

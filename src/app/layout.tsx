@@ -25,9 +25,20 @@ const satoshi = localFont({
   display: "swap",
 });
 
+const pyeojin = localFont({
+  src: [
+    { path: "./fonts/PyeojinGothic-Light.woff2", weight: "300", style: "normal" },
+    { path: "./fonts/PyeojinGothic-Regular.woff2", weight: "400", style: "normal" },
+    { path: "./fonts/PyeojinGothic-Bold.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-pyeojin",  // 👈 Tailwind에서 font-pyeojin 클래스 사용
+  display: "swap",
+});
+
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={satoshi.variable}>
+    <html lang="ko" className={`${satoshi.variable} ${pyeojin.variable}`}>
       <body suppressHydrationWarning>
         <BodyBackground />
         <div id="home-bg-overlay" aria-hidden="true" /> {/* 👈 추가 */}

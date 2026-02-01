@@ -5,10 +5,8 @@ import { usePathname } from "next/navigation";
 
 interface HeaderContextType {
   isMobile: boolean;
-  isClicked: boolean;
   categoryClicked: boolean;
-  shouldShow: boolean;
-  handleClick: () => void;
+  shouldShow: boolean; // 항상 true
   handleCategoryClick: () => void;
   handleHomeClick: () => void;
 }
@@ -18,7 +16,6 @@ const HeaderContext = createContext<HeaderContextType | undefined>(undefined);
 export function HeaderProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
-  const [isClicked, setIsClicked] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [categoryClicked, setCategoryClicked] = useState(false);
 
@@ -33,69 +30,24 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // 모바일에서 배경 애니메이션 관리
+  // 오버레이 항상 표시
   useEffect(() => {
     if (!mounted || !isRootPage) return;
     
-    const bgLayer = document.getElementById("home-bg-layer");
-    if (!bgLayer) return;
-
-    if (isMobile && !isClicked) {
-      // 모바일에서 클릭 전: floating 애니메이션
-      bgLayer.classList.add("floating");
-      bgLayer.classList.remove("stopped");
-    } else if (isMobile && isClicked) {
-      // 모바일에서 클릭 후: 애니메이션 정지
-      bgLayer.classList.remove("floating");
-      bgLayer.classList.add("stopped");
-    } else {
-      // 데스크탑: 클래스 제거
-      bgLayer.classList.remove("floating", "stopped");
-    }
-  }, [mounted, isMobile, isClicked, isRootPage]);
-
-  
-  // 모바일에서 배경 애니메이션 + 오버레이 관리
-  useEffect(() => {
-    if (!mounted || !isRootPage) return;
-    
-    const bgLayer = document.getElementById("home-bg-layer");
     const overlay = document.getElementById("home-bg-overlay");
-    if (!bgLayer) return;
+    if (!overlay) return;
 
-    if (isMobile && !isClicked) {
-      // 모바일에서 클릭 전: floating 애니메이션, 오버레이 숨김
-      bgLayer.classList.add("floating");
-      bgLayer.classList.remove("stopped");
-      overlay?.classList.remove("visible");
-    } else if (isMobile && isClicked) {
-      // 모바일에서 클릭 후: 애니메이션 정지, 오버레이 표시 (진하게)
-      bgLayer.classList.remove("floating");
-      bgLayer.classList.add("stopped");
-      overlay?.classList.add("visible");
-    } else {
-      // 데스크탑: 애니메이션 없음, 오버레이 항상 표시 (연하게)
-      bgLayer.classList.remove("floating", "stopped");
-      overlay?.classList.add("visible"); // 👈 데스크탑에서도 visible 추가
-    }
-  }, [mounted, isMobile, isClicked, isRootPage]);
+    // 진입 시 바로 오버레이 표시
+    overlay.classList.add("visible");
+  }, [mounted, isRootPage]);
 
   useEffect(() => {
     if (isRootPage) {
       setCategoryClicked(false);
-      if (isMobile) {
-        setIsClicked(false);
-      }
     } else {
       setCategoryClicked(true);
     }
-  }, [isRootPage, isMobile]);
-
-  const handleClick = () => {
-    if (isMobile && !isClicked && isRootPage) {
-      setIsClicked(true);
-    }
-  };
+  }, [isRootPage]);
 
   const handleCategoryClick = () => {
     setCategoryClicked(true);
@@ -104,22 +56,18 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
   const handleHomeClick = () => {
     if (!isRootPage) {
       setCategoryClicked(false);
-      if (isMobile) {
-        setIsClicked(false);
-      }
     }
   };
 
-  const shouldShow = mounted && (!isMobile || isClicked);
+  // 항상 true - 마운트 완료되면 바로 표시
+  const shouldShow = mounted;
 
   return (
     <HeaderContext.Provider
       value={{
         isMobile,
-        isClicked,
         categoryClicked,
         shouldShow,
-        handleClick,
         handleCategoryClick,
         handleHomeClick,
       }}

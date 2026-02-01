@@ -22,8 +22,41 @@ export default function Header() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [positions, setPositions] = useState<{ top: number; left: number }[]>([]);
 
   const isRootPage = pathname === "/";
+
+  // 랜덤 위치 생성 (루트 페이지 진입 시마다)
+  useEffect(() => {
+    if (!isRootPage || categoryClicked) return;
+
+    const generatePositions = () => {
+      const newPositions: { top: number; left: number }[] = [];
+      const headerHeight = 100; // 헤더 영역
+      const footerHeight = 100; // 푸터 영역
+      const leftMargin = 20; // 좌측 여백 (%)
+      const rightMargin = 20; // 우측 여백 (%)
+      
+      // 사용 가능한 영역 계산
+      const availableHeight = window.innerHeight - headerHeight - footerHeight;
+      const availableWidthPercent = 100 - leftMargin - rightMargin;
+
+      NAV.forEach(() => {
+        // 랜덤 위치 생성 (겹치지 않도록 간격 확보)
+        const top = headerHeight + Math.random() * (availableHeight - 100);
+        const left = leftMargin + Math.random() * availableWidthPercent;
+        
+        newPositions.push({
+          top: top,
+          left: left,
+        });
+      });
+
+      setPositions(newPositions);
+    };
+
+    generatePositions();
+  }, [isRootPage, categoryClicked]);
 
   // 컴포넌트 마운트 시 인증 상태 확인
   useEffect(() => {
@@ -53,6 +86,7 @@ export default function Header() {
       }
     } else {
       // 다른 페이지: 홈으로 이동
+      handleHomeClick();
       router.push("/");
     }
   };
@@ -83,11 +117,11 @@ export default function Header() {
             "0 0 3px rgba(255,255,255,0.75), 0 1px 2px rgba(0,0,0,0.35)",
           opacity: shouldShow && !scrolled ? 1 : 0,
           pointerEvents: shouldShow && !scrolled ? "auto" : "none",
-          transition: "opacity 0.3s ease",
+          transition: "opacity 0.5s ease", // 페이드인 시간 증가
           cursor: "pointer",
         }}
       >
-        Dasol Cho
+        趙 다솔
         {isOwner && (
           <span
             style={{
@@ -102,43 +136,41 @@ export default function Header() {
         )}
       </div>
 
-      {/* 카테고리: 화면 중앙 */}
-      {!categoryClicked && (
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 100,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "16px",
-            opacity: shouldShow ? 1 : 0,
-            pointerEvents: shouldShow ? "auto" : "none",
-            transition: "opacity 0.5s ease",
-          }}
-        >
-          {NAV.map((n) => (
-            <VTLink
+      {/* 카테고리: 랜덤 위치 - 진입 시 바로 페이드인 */}
+      {!categoryClicked && positions.length > 0 && (
+        <>
+          {NAV.map((n, index) => (
+            <div
               key={n.href}
-              href={n.href}
               style={{
-                fontSize: "clamp(56px, 5vw, 44px)",
-                fontWeight: 400,
-                letterSpacing: "0.04em",
-                color: "#111",
-                lineHeight: 1.1,
-                textShadow:
-                  "0 0 4px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.35)",
+                position: "fixed",
+                top: `${positions[index].top}px`,
+                left: `${positions[index].left}%`,
+                transform: "translate(-50%, -50%)",
+                zIndex: 100,
+                opacity: shouldShow ? 1 : 0,
+                pointerEvents: shouldShow ? "auto" : "none",
+                transition: "opacity 0.8s ease",
               }}
-              onClick={handleCategoryClick}
             >
-              {n.label}
-            </VTLink>
+              <VTLink
+                href={n.href}
+                style={{
+                  fontSize: "clamp(26px, 5vw, 44px)",
+                  fontWeight: 700,
+                  letterSpacing: "0.04em",
+                  color: "#7fff00",
+                  lineHeight: 1.1,
+                  textShadow:
+                    "0 0 4px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.35)",
+                }}
+                onClick={handleCategoryClick}
+              >
+                {n.label}
+              </VTLink>
+            </div>
           ))}
-        </div>
+        </>
       )}
 
       {/* 로그인 모달 */}
