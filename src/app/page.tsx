@@ -12,7 +12,7 @@ const BackgroundUploadButton = dynamic(() => import("../components/BackgroundUpl
 
 export default function HomePage() {
   const pathname = usePathname();
-  const { isMobile, isClicked, shouldShow, handleClick } = useHeader();
+  const { shouldShow } = useHeader(); // 클릭 관련 제거
   const isOwner = useAuthStore((state) => state.isOwner);
 
   const isRootPage = pathname === "/";
@@ -20,7 +20,6 @@ export default function HomePage() {
   return (
     <div
       className="home-centered-layout"
-      onClick={handleClick}
       style={{
         display: "flex",
         flexDirection: "column",
@@ -28,17 +27,17 @@ export default function HomePage() {
         justifyContent: "center",
         minHeight: "calc(100vh - 72px)",
         padding: "32px 16px",
-        cursor: isMobile && !isClicked && isRootPage ? "pointer" : "default",
+        cursor: "default", // 항상 default
       }}
     >
-      {/* 배경 업로드 버튼: 루트 페이지에서 owner만 표시 */}
+      {/* Owner 업로드 버튼 - 진입 시 바로 페이드인 */}
       {isRootPage && isOwner && (
         <div
           style={{
             marginTop: "200px",
             opacity: shouldShow ? 1 : 0,
             pointerEvents: shouldShow ? "auto" : "none",
-            transition: "opacity 0.5s ease",
+            transition: "opacity 0.8s ease",
           }}
         >
           <BackgroundUploadButton />
