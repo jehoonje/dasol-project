@@ -32,24 +32,57 @@ export default function Header() {
 
     const generatePositions = () => {
       const newPositions: { top: number; left: number }[] = [];
-      const headerHeight = 100; // 헤더 영역
+      const headerHeight = 200; // 헤더 영역
       const footerHeight = 100; // 푸터 영역
-      const leftMargin = 20; // 좌측 여백 (%)
-      const rightMargin = 20; // 우측 여백 (%)
+      const leftMargin = 20; // 좌측 여백 (%) - 증가
+      const rightMargin = 20; // 우측 여백 (%) - 증가
       
       // 사용 가능한 영역 계산
       const availableHeight = window.innerHeight - headerHeight - footerHeight;
       const availableWidthPercent = 100 - leftMargin - rightMargin;
 
-      NAV.forEach(() => {
-        // 랜덤 위치 생성 (겹치지 않도록 간격 확보)
-        const top = headerHeight + Math.random() * (availableHeight - 100);
-        const left = leftMargin + Math.random() * availableWidthPercent;
+      // 각 텍스트의 대략적인 크기 (px)
+      const itemWidth = 200; // 텍스트 너비 (여유있게)
+      const itemHeight = 60; // 텍스트 높이
+      const minDistance = 80; // 최소 간격 (px)
+
+      // 두 위치가 겹치는지 확인하는 함수
+      const isOverlapping = (
+        pos1: { top: number; left: number },
+        pos2: { top: number; left: number }
+      ) => {
+        const pos1LeftPx = (pos1.left / 100) * window.innerWidth;
+        const pos2LeftPx = (pos2.left / 100) * window.innerWidth;
         
-        newPositions.push({
-          top: top,
-          left: left,
-        });
+        const horizontalDistance = Math.abs(pos1LeftPx - pos2LeftPx);
+        const verticalDistance = Math.abs(pos1.top - pos2.top);
+        
+        return (
+          horizontalDistance < itemWidth + minDistance &&
+          verticalDistance < itemHeight + minDistance
+        );
+      };
+
+      NAV.forEach(() => {
+        let attempts = 0;
+        let newPos: { top: number; left: number };
+        
+        // 겹치지 않는 위치를 찾을 때까지 시도 (최대 50번)
+        do {
+          const top = headerHeight + Math.random() * (availableHeight - itemHeight);
+          const left = leftMargin + Math.random() * availableWidthPercent;
+          
+          newPos = { top, left };
+          attempts++;
+          
+          // 50번 시도해도 안되면 그냥 추가 (무한루프 방지)
+          if (attempts > 50) break;
+          
+        } while (
+          newPositions.some(existingPos => isOverlapping(existingPos, newPos))
+        );
+        
+        newPositions.push(newPos);
       });
 
       setPositions(newPositions);
@@ -121,7 +154,7 @@ export default function Header() {
           cursor: "pointer",
         }}
       >
-        趙 다솔
+        趙 dasol
         {isOwner && (
           <span
             style={{
