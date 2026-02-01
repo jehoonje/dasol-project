@@ -143,7 +143,7 @@ export default function Header() {
           transform: "translateX(-50%)",
           zIndex: 100,
           fontSize: "22px",
-          fontWeight: 400,
+          fontWeight: 300,
           letterSpacing: "0.02em",
           color: "#111",
           textShadow:
@@ -192,10 +192,10 @@ export default function Header() {
                   fontSize: "clamp(26px, 5vw, 44px)",
                   fontWeight: 700,
                   letterSpacing: "0.04em",
-                  color: "#7fff00",
+                  color: "#7fffa0",
                   lineHeight: 1.1,
                   textShadow:
-                    "0 0 4px rgba(255,255,255,0.75), 0 2px 4px rgba(0,0,0,0.35)",
+                    "0 0 4px rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.35)",
                 }}
                 onClick={handleCategoryClick}
               >
