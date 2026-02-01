@@ -159,7 +159,9 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
 
   return (
     <>
-      <button className="button primary" onClick={() => setOpen(true)} title="Add Post">
+      <button className="button primary" onClick={() => setOpen(true)} title="Add Post" style={{
+            marginTop: "80px"
+          }}>
         ＋ Add Post
       </button>
 
