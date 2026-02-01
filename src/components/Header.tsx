@@ -34,10 +34,10 @@ useEffect(() => {
 
   const generatePositions = () => {
     const newPositions: { top: number; left: number }[] = [];
-    const headerHeight = 200; // 헤더 영역
-    const footerHeight = 100; // 푸터 영역
-    const leftMargin = 17; // 좌측 여백 (%) - 25%에서 15%로 축소
-    const rightMargin = 17; // 우측 여백 (%) - 25%에서 15%로 축소
+    const headerHeight = 150; // 헤더 영역
+    const footerHeight = 50; // 푸터 영역
+    const leftMargin = 12; // 좌측 여백 (%) - 25%에서 15%로 축소
+    const rightMargin = 12; // 우측 여백 (%) - 25%에서 15%로 축소
     
     // 사용 가능한 영역 계산
     const availableHeight = window.innerHeight - headerHeight - footerHeight;

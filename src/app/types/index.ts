@@ -23,3 +23,11 @@ export type ArticleBlock = {
   sort_order: number;
   created_at: string;
 };
+
+export type ArticleCategory = {
+  id: string;
+  title: string;
+  description: string | null;
+  sort_order: number;
+  created_at: string;
+};

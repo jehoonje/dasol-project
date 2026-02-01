@@ -6,119 +6,77 @@ import { supabase } from "../lib/supabaseClient";
 import VTLink from "@/components/VTLink";
 import type { Route } from "next";
 import { useAuthStore } from "../store/useAuthStore";
+import type { ArticleCategory } from "../types";
 
-// 업로드 버튼은 동적 로드
-const ArticleCreateButton = dynamic(() => import("@/components/ArticleCreateButton"), {
+const CategoryCreateButton = dynamic(() => import("@/components/CategoryCreateButton"), {
   ssr: false,
 });
 
-type Article = {
-  id: string;
-  title: string;
-  cover_image_url: string | null;
-  created_at: string;
-};
-
 export default function ArticlesPage() {
-  const [items, setItems] = useState<Article[]>([]);
+  const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const isOwner = useAuthStore((state) => state.isOwner);
 
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("pf_articles")
-      .select("id, title, cover_image_url, created_at")
+      .from("pf_article_categories")
+      .select("*")
+      .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
-    if (!error && data) setItems(data as Article[]);
+    
+    if (!error && data) setCategories(data as ArticleCategory[]);
     setLoading(false);
   };
 
   useEffect(() => { load(); }, []);
 
+  const handleDelete = async (id: string, title: string) => {
+    if (!confirm(`"${title}" 대제목을 삭제하시겠습니까?\n내부의 모든 글이 함께 삭제됩니다.`)) return;
+    try {
+      const { error } = await supabase.from("pf_article_categories").delete().eq("id", id);
+      if (error) throw error;
+      load();
+    } catch (error: any) {
+      alert(`삭제 실패: ${error.message}`);
+    }
+  };
+
   return (
-    <div className="container-90" style={{ paddingTop: "80px" }}>
+    <div className="container-90" style={{ paddingTop: "20px" }}>
       {isOwner && (
-        <div className="plus-row">
-          <ArticleCreateButton onCreated={load} />
+        <div className="plus-row" style={{ marginBottom: "40px" }}>
+          <CategoryCreateButton onCreated={load} />
         </div>
       )}
 
-      <h1 className="mt-2 mb-4 font-white">.</h1>
-
-      {loading && <p></p>}
-
-      <div className="articles-grid" data-nopreview="true">
-        {items.map((a) => (
-          <div key={a.id} className="article-card" style={{ position: "relative" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        {categories.map((cat) => (
+          <div key={cat.id} style={{ position: "relative", borderBottom: "1px solid #eee", paddingBottom: "12px" }}>
+            <VTLink href={`/articles/category/${cat.id}` as Route}>
+              <h2 style={{ fontSize: "32px", fontWeight: "700", color: "#111", marginTop: 20 }}>
+                {cat.title}
+              </h2>
+            </VTLink>
+            
             {isOwner && (
               <button
-                onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!confirm(`"${a.title}" 글을 삭제하시겠습니까?`)) return;
-                  try {
-                    const res = await fetch(`/api/articles/${a.id}`, {
-                      method: "DELETE",
-                    });
-                    if (!res.ok) {
-                      const json = await res.json();
-                      throw new Error(json.error || "삭제 실패");
-                    }
-                    alert("삭제되었습니다.");
-                    load();
-                  } catch (error: any) {
-                    alert(`삭제 실패: ${error.message}`);
-                  }
-                }}
+                onClick={() => handleDelete(cat.id, cat.title)}
                 style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  border: "none",
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  color: "white",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                  transition: "background-color 0.2s",
+                  position: "absolute", right: 0, top: "10px",
+                  background: "none", border: "none", color: "#ccc",
+                  fontSize: "20px", cursor: "pointer"
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
-                }}
-                title="삭제"
               >
                 ×
               </button>
             )}
-            <VTLink href={`/articles/${a.id}` as Route} data-nopreview="true">
-              <h2 className="article-title">{a.title}</h2>
-              {a.cover_image_url ? (
-                <div className="thumb">
-                  <img
-                    src={a.cover_image_url}
-                    alt={a.title}
-                    loading="lazy"
-                    decoding="async"
-                    data-nopreview="true"
-                  />
-                </div>
-              ) : (
-                <div className="thumb thumb--empty">대표 이미지 없음</div>
-              )}
-            </VTLink>
           </div>
         ))}
       </div>
+
+      {loading && <p>불러오는 중...</p>}
+      {!loading && categories.length === 0 && <p style={{ color: "#999" }}>등록된 카테고리가 없습니다.</p>}
     </div>
   );
 }

@@ -68,7 +68,7 @@ export default function ArticleDetailPage() {
   if (!article) return <div className="container-90" style={{ paddingTop: "80px" }}><h1>게시글을 찾을 수 없습니다.</h1></div>;
 
   return (
-    <div className="container-90" style={{ position: "relative", paddingTop: "80px" }}>
+    <div className="container-90" style={{ position: "relative", paddingTop: "0px" }}>
       {isOwner && (
         <button
           onClick={handleDelete}
