@@ -7,6 +7,7 @@ import VTLink from "../components/VTLink";
 import { useHeader } from "./HeaderContext";
 import { useAuthStore } from "../app/store/useAuthStore";
 import LoginModal from "./LoginModal";
+import NavigationDrawer from "./NavigationDrawer";
 
 const NAV = [
   { href: "/articles" as Route, label: "Articles" },
@@ -27,84 +28,82 @@ export default function Header() {
   const isRootPage = pathname === "/";
 
   // 랜덤 위치 생성 (루트 페이지 진입 시마다)
-  // 랜덤 위치 생성 (루트 페이지 진입 시마다)
-// 랜덤 위치 생성 (루트 페이지 진입 시마다)
-useEffect(() => {
-  if (!isRootPage || categoryClicked) return;
+  useEffect(() => {
+    if (!isRootPage || categoryClicked) return;
 
-  const generatePositions = () => {
-    const newPositions: { top: number; left: number }[] = [];
-    const headerHeight = 150; // 헤더 영역
-    const footerHeight = 50; // 푸터 영역
-    const leftMargin = 12; // 좌측 여백 (%) - 25%에서 15%로 축소
-    const rightMargin = 12; // 우측 여백 (%) - 25%에서 15%로 축소
-    
-    // 사용 가능한 영역 계산
-    const availableHeight = window.innerHeight - headerHeight - footerHeight;
-    const availableWidthPercent = 100 - leftMargin - rightMargin;
+    const generatePositions = () => {
+      const newPositions: { top: number; left: number }[] = [];
+      const headerHeight = 150; // 헤더 영역
+      const footerHeight = 50; // 푸터 영역
+      const leftMargin = 12; // 좌측 여백 (%) - 25%에서 15%로 축소
+      const rightMargin = 12; // 우측 여백 (%) - 25%에서 15%로 축소
+      
+      // 사용 가능한 영역 계산
+      const availableHeight = window.innerHeight - headerHeight - footerHeight;
+      const availableWidthPercent = 100 - leftMargin - rightMargin;
 
-    // 각 텍스트의 대략적인 크기 (px) - 반응형 고려
-    const fontSize = Math.min(Math.max(window.innerWidth * 0.05, 26), 44);
-    const itemWidth = fontSize * 6; // 8에서 6으로 축소
-    const itemHeight = fontSize * 1.5;
-    const minDistance = 100; // 200에서 100으로 축소
+      // 각 텍스트의 대략적인 크기 (px) - 반응형 고려
+      const fontSize = Math.min(Math.max(window.innerWidth * 0.05, 26), 44);
+      const itemWidth = fontSize * 6; // 8에서 6으로 축소
+      const itemHeight = fontSize * 1.5;
+      const minDistance = 100; // 200에서 100으로 축소
 
-    // 중심점 간의 거리로 계산 (더 효율적)
-    const isOverlapping = (
-      pos1: { top: number; left: number },
-      pos2: { top: number; left: number }
-    ) => {
-      const pos1LeftPx = (pos1.left / 100) * window.innerWidth;
-      const pos2LeftPx = (pos2.left / 100) * window.innerWidth;
-      
-      const horizontalDistance = Math.abs(pos1LeftPx - pos2LeftPx);
-      const verticalDistance = Math.abs(pos1.top - pos2.top);
-      
-      // 중심점 간 거리 계산
-      const distance = Math.sqrt(
-        horizontalDistance ** 2 + verticalDistance ** 2
-      );
-      
-      // 최소 거리보다 가까우면 겹침
-      const minCenterDistance = Math.max(itemWidth, itemHeight) + minDistance;
-      return distance < minCenterDistance;
+      // 중심점 간의 거리로 계산 (더 효율적)
+      const isOverlapping = (
+        pos1: { top: number; left: number },
+        pos2: { top: number; left: number }
+      ) => {
+        const pos1LeftPx = (pos1.left / 100) * window.innerWidth;
+        const pos2LeftPx = (pos2.left / 100) * window.innerWidth;
+        
+        const horizontalDistance = Math.abs(pos1LeftPx - pos2LeftPx);
+        const verticalDistance = Math.abs(pos1.top - pos2.top);
+        
+        // 중심점 간 거리 계산
+        const distance = Math.sqrt(
+          horizontalDistance ** 2 + verticalDistance ** 2
+        );
+        
+        // 최소 거리보다 가까우면 겹침
+        const minCenterDistance = Math.max(itemWidth, itemHeight) + minDistance;
+        return distance < minCenterDistance;
+      };
+
+      NAV.forEach((_, index) => {
+        let attempts = 0;
+        let newPos: { top: number; left: number };
+        const maxAttempts = 1000; // 합리적인 시도 횟수
+        
+        do {
+          // 안전 여백 추가
+          const safeMarginTop = itemHeight / 2;
+          const safeMarginBottom = itemHeight / 2;
+          
+          const top = headerHeight + safeMarginTop + 
+                      Math.random() * (availableHeight - itemHeight - safeMarginTop - safeMarginBottom);
+          const left = leftMargin + Math.random() * availableWidthPercent;
+          
+          newPos = { top, left };
+          attempts++;
+          
+          if (attempts >= maxAttempts) {
+            console.warn(`항목 ${index + 1}: ${maxAttempts}번 시도 후 강제 배치`);
+            break;
+          }
+          
+        } while (
+          newPositions.some(existingPos => isOverlapping(existingPos, newPos))
+        );
+        
+        newPositions.push(newPos);
+      });
+
+      console.log('생성된 위치:', newPositions);
+      setPositions(newPositions);
     };
 
-    NAV.forEach((_, index) => {
-      let attempts = 0;
-      let newPos: { top: number; left: number };
-      const maxAttempts = 1000; // 합리적인 시도 횟수
-      
-      do {
-        // 안전 여백 추가
-        const safeMarginTop = itemHeight / 2;
-        const safeMarginBottom = itemHeight / 2;
-        
-        const top = headerHeight + safeMarginTop + 
-                    Math.random() * (availableHeight - itemHeight - safeMarginTop - safeMarginBottom);
-        const left = leftMargin + Math.random() * availableWidthPercent;
-        
-        newPos = { top, left };
-        attempts++;
-        
-        if (attempts >= maxAttempts) {
-          console.warn(`항목 ${index + 1}: ${maxAttempts}번 시도 후 강제 배치`);
-          break;
-        }
-        
-      } while (
-        newPositions.some(existingPos => isOverlapping(existingPos, newPos))
-      );
-      
-      newPositions.push(newPos);
-    });
-
-    console.log('생성된 위치:', newPositions);
-    setPositions(newPositions);
-  };
-
-  generatePositions();
-}, [isRootPage, categoryClicked]);
+    generatePositions();
+  }, [isRootPage, categoryClicked]);
 
   // 컴포넌트 마운트 시 인증 상태 확인
   useEffect(() => {
@@ -146,6 +145,9 @@ useEffect(() => {
 
   return (
     <>
+      {/* 네비게이션 드로어 */}
+      <NavigationDrawer />
+
       {/* 홈 버튼: 상단 중앙 고정 */}
       <div
         className="site-title"
