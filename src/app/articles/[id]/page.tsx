@@ -68,7 +68,7 @@ export default function ArticleDetailPage() {
   if (!article) return <div className="container-90" style={{ paddingTop: "0px" }}><h1></h1></div>;
 
   return (
-    <div className="container-90" style={{ position: "relative", paddingTop: "0px" }}>
+    <div className="container-90" style={{ position: "relative", paddingTop: "80px" }}>
       {isOwner && (
         <button
           onClick={handleDelete}

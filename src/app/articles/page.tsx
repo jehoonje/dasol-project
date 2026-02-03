@@ -43,7 +43,7 @@ export default function ArticlesPage() {
   };
 
   return (
-    <div className="container-90" style={{ paddingTop: "0px" }}>
+    <div className="container-90" style={{ paddingTop: "80px" }}>
       {isOwner && (
         <div className="plus-row" style={{ marginBottom: "40px" }}>
           <CategoryCreateButton onCreated={load} />

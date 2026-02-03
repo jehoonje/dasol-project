@@ -163,8 +163,8 @@ export default function Header() {
           fontWeight: 300,
           letterSpacing: "0.02em",
           color: "#111",
-          textShadow:
-            "0 0 3px rgba(255,255,255,0.75), 0 1px 2px rgba(0,0,0,0.35)",
+          // textShadow:
+          //   "0 0 3px rgba(255,255,255,0.75), 0 1px 2px rgba(0,0,0,0.35)",
           opacity: shouldShow && !scrolled ? 1 : 0,
           pointerEvents: shouldShow && !scrolled ? "auto" : "none",
           transition: "opacity 0.5s ease", // 페이드인 시간 증가
