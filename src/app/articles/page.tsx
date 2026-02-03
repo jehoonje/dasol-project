@@ -43,7 +43,7 @@ export default function ArticlesPage() {
   };
 
   return (
-    <div className="container-90" style={{ paddingTop: "20px" }}>
+    <div className="container-90" style={{ paddingTop: "0px" }}>
       {isOwner && (
         <div className="plus-row" style={{ marginBottom: "40px" }}>
           <CategoryCreateButton onCreated={load} />
@@ -75,7 +75,7 @@ export default function ArticlesPage() {
         ))}
       </div>
 
-      {loading && <p>불러오는 중...</p>}
+      {loading && <p></p>}
       {!loading && categories.length === 0 && <p style={{ color: "#999" }}>등록된 카테고리가 없습니다.</p>}
     </div>
   );

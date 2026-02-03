@@ -17,7 +17,7 @@ img { max-width: 100%; height: auto; display: block; }
 .container-90 { width: 90%; margin: 0 auto; }
 .header { position: sticky; top: 0; background: transparent; border-bottom: 0px solid #dddddd; z-index: 20; }
 .header-inner { display: flex; align-items: center; justify-content: center; gap: 16px; height: 72px; padding: 0 16px; position: relative; }
-.site-title { font-weight: 600; font-size: 24px; color: #000; text-shadow: -2px 0px white, 0px 2px white;  letter-spacing: 0.02em; position:absolute; top:0; text-align: center; transform: translateY(0%); }
+.site-title { font-weight: 600; font-size: 24px; color: #000;  letter-spacing: 0.02em; position:absolute; top:0; text-align: center; transform: translateY(0%); }
 .nav { display: flex; gap: 32px; font-size: 18px; font-weight: 600; margin: 0; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
 .nav.visible { opacity: 1; pointer-events: auto; }
 .nav.top-position { position: static; transform: none; margin-top: 0; }
@@ -53,7 +53,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* 모바일 스타일 */
 @media (max-width: 768px) {
-  .site-title { font-size: 24px; text-shadow: -2px 0px white, 0px 2px white; }
+  .site-title { font-size: 24px;  }
   
   .nav {
     flex-direction: column;
@@ -121,7 +121,7 @@ img { max-width: 100%; height: auto; display: block; }
 .grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 
 .plus-row {
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 0px solid #e5e5e5;
   padding: 16px 0;
   margin-bottom: 16px;
   position: relative;

@@ -107,6 +107,9 @@ export default function NavigationDrawer() {
           justifyContent: "center",
           alignItems: "center",
           gap: "6px",
+          opacity: isOpen ? 0 : 1,
+          pointerEvents: isOpen ? "none" : "auto",
+          transition: "opacity 0.3s ease",
         }}
         aria-label="메뉴 열기"
       >
@@ -116,8 +119,6 @@ export default function NavigationDrawer() {
             width: "28px",
             height: "2px",
             backgroundColor: "#111",
-            transition: "all 0.3s ease",
-            transform: isOpen ? "rotate(45deg) translateY(8px)" : "none",
           }}
         />
         <span
@@ -126,8 +127,6 @@ export default function NavigationDrawer() {
             width: "28px",
             height: "2px",
             backgroundColor: "#111",
-            transition: "all 0.3s ease",
-            opacity: isOpen ? 0 : 1,
           }}
         />
         <span
@@ -136,8 +135,6 @@ export default function NavigationDrawer() {
             width: "28px",
             height: "2px",
             backgroundColor: "#111",
-            transition: "all 0.3s ease",
-            transform: isOpen ? "rotate(-45deg) translateY(-8px)" : "none",
           }}
         />
       </button>
@@ -168,6 +165,7 @@ export default function NavigationDrawer() {
           left: 0,
           bottom: 0,
           width: "90%",
+          height: "90%",
           maxWidth: "400px",
           backgroundColor: "#ffffff",
           zIndex: 180,
@@ -180,76 +178,69 @@ export default function NavigationDrawer() {
         }}
       >
         {/* 드로어 헤더 */}
-        <div
-          style={{
-            padding: "32px 24px 24px",
-            borderBottom: "1px solid #e5e5e5",
-            position: "relative",
-          }}
-        >
-          {/* 닫기 버튼 */}
-          <button
-            onClick={toggleDrawer}
-            style={{
-              position: "absolute",
-              top: "24px",
-              right: "24px",
-              width: "32px",
-              height: "32px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "28px",
-              color: "#666",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 0,
-              transition: "color 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = "#111";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = "#666";
-            }}
-            aria-label="메뉴 닫기"
-          >
-            ×
-          </button>
+<div
+  style={{
+    padding: "32px 24px 24px",
+    borderBottom: "1px solid #e5e5e5",
+    position: "relative",
+    height: "88px", // minHeight 대신 고정 height 사용
+    display: "flex",
+    alignItems: "center",
+  }}
+>
+  {/* 닫기 버튼 */}
+  <button
+    onClick={toggleDrawer}
+    style={{
+      position: "absolute",
+      top: "24px",
+      right: "24px",
+      width: "32px",
+      height: "32px",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "28px",
+      color: "#666",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: 0,
+      transition: "color 0.2s ease",
+    }}
+    onMouseEnter={(e) => {
+      e.currentTarget.style.color = "#111";
+    }}
+    onMouseLeave={(e) => {
+      e.currentTarget.style.color = "#666";
+    }}
+    aria-label="메뉴 닫기"
+  >
+    ×
+  </button>
 
-          {showCategories ? (
-            <button
-              onClick={handleBack}
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: "18px",
-                fontWeight: "600",
-                color: "#111",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: 0,
-              }}
-            >
-              <span style={{ fontSize: "24px" }}>←</span> Articles
-            </button>
-          ) : (
-            <h2
-              style={{
-                fontSize: "24px",
-                fontWeight: "700",
-                color: "#111",
-                margin: 0,
-              }}
-            >
-              Menu
-            </h2>
-          )}
-        </div>
-
+  {/* Back 버튼 영역 - 항상 존재하되 조건부로 표시 */}
+  <button
+    onClick={handleBack}
+    style={{
+      background: "none",
+      border: "none",
+      fontSize: "18px",
+      fontWeight: "600",
+      color: "#111",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      padding: 0,
+      opacity: showCategories ? 1 : 0,
+      pointerEvents: showCategories ? "auto" : "none",
+      transition: "opacity 0.3s ease",
+    }}
+  >
+    <span style={{ fontSize: "24px", padding: "0"}}>←</span> Back
+  </button>
+</div>
         {/* 드로어 컨텐츠 */}
         <div
           style={{

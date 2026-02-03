@@ -78,15 +78,15 @@ export default function CategoryArticlesPage() {
 
   if (loading) {
     return (
-      <div className="container-90" style={{ paddingTop: "80px" }}>
-        <p>불러오는 중…</p>
+      <div className="container-90" style={{ paddingTop: "0px" }}>
+        
       </div>
     );
   }
 
   if (!category) {
     return (
-      <div className="container-90" style={{ paddingTop: "80px" }}>
+      <div className="container-90" style={{ paddingTop: "0px" }}>
         <h1>카테고리를 찾을 수 없습니다.</h1>
         <button
           onClick={() => router.push("/articles")}
@@ -106,7 +106,7 @@ export default function CategoryArticlesPage() {
   }
 
   return (
-    <div className="container-90" style={{ paddingTop: "80px" }}>
+    <div className="container-90" style={{ paddingTop: "0px" }}>
       <div style={{ marginBottom: "32px" }}>
         {category.description && (
           <p style={{ fontSize: "16px", color: "#666" }}>{category.description}</p>
