@@ -78,16 +78,15 @@ export default function CategoryArticlesPage() {
 
   if (loading) {
     return (
-      <div className="container-90" style={{ paddingTop: "80px" }}>
-        <p>불러오는 중…</p>
+      <div className="container-90" style={{ paddingTop: "0px" }}>
+        
       </div>
     );
   }
 
   if (!category) {
     return (
-      <div className="container-90" style={{ paddingTop: "80px" }}>
-        <h1>카테고리를 찾을 수 없습니다.</h1>
+      <div className="container-90" style={{ paddingTop: "0px" }}>
         <button
           onClick={() => router.push("/articles")}
           style={{
@@ -99,14 +98,14 @@ export default function CategoryArticlesPage() {
             cursor: "pointer",
           }}
         >
-          카테고리 목록으로
+          
         </button>
       </div>
     );
   }
 
   return (
-    <div className="container-90" style={{ paddingTop: "80px" }}>
+    <div className="container-90" style={{ paddingTop: "0px" }}>
       <div style={{ marginBottom: "32px" }}>
         {category.description && (
           <p style={{ fontSize: "16px", color: "#666" }}>{category.description}</p>
@@ -173,7 +172,7 @@ export default function CategoryArticlesPage() {
                   />
                 </div>
               ) : (
-                <div className="thumb thumb--empty">대표 이미지 없음</div>
+                <div className="thumb thumb--empty">No Images</div>
               )}
             </VTLink>
           </div>
@@ -181,7 +180,7 @@ export default function CategoryArticlesPage() {
 
         {articles.length === 0 && (
           <div style={{ padding: "40px", textAlign: "center", color: "#999" }}>
-            아직 작성된 글이 없습니다.
+            
           </div>
         )}
       </div>
