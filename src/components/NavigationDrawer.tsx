@@ -93,7 +93,7 @@ export default function NavigationDrawer() {
         onClick={toggleDrawer}
         style={{
           position: "fixed",
-          top: "20px",
+          top: "16px",
           left: "5%",
           zIndex: 200,
           width: "44px",
@@ -161,26 +161,29 @@ export default function NavigationDrawer() {
       <div
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
+          top: "16px",
+          left: "5%",
           width: "90%",
           height: "90%",
           maxWidth: "400px",
+          maxHeight: "calc(100vh - 32px)",
           backgroundColor: "#ffffff",
           zIndex: 180,
-          transform: isOpen ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-          boxShadow: isOpen ? "4px 0 24px rgba(0, 0, 0, 0.15)" : "none",
+          transform: isOpen ? "scale(1)" : "scale(0)",
+          transformOrigin: "top left",
+          transition: "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          boxShadow: isOpen ? "4px 4px 24px rgba(0, 0, 0, 0.15)" : "none",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
+          borderRadius: "12px",
+          opacity: isOpen ? 1 : 0,
         }}
       >
         {/* 드로어 헤더 */}
 <div
   style={{
-    padding: "32px 24px 24px",
+    padding: "24px",
     borderBottom: "1px solid #e5e5e5",
     position: "relative",
     height: "88px", // minHeight 대신 고정 height 사용
