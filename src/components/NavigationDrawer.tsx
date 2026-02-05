@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { supabase } from "../app/lib/supabaseClient";
 import VTLink from "./VTLink";
 import type { Route } from "next";
@@ -14,7 +14,6 @@ const NAV_ITEMS = [
 ];
 
 export default function NavigationDrawer() {
-  const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [showCategories, setShowCategories] = useState(false);
@@ -42,8 +41,11 @@ export default function NavigationDrawer() {
 
   // 페이지 변경 시 드로어 닫기
   useEffect(() => {
-    setIsOpen(false);
-    setShowCategories(false);
+    // 드로어가 열려있을 때만 닫기
+    if (isOpen) {
+      setIsOpen(false);
+      setShowCategories(false);
+    }
   }, [pathname]);
 
   // 드로어 열기/닫기
@@ -71,14 +73,6 @@ export default function NavigationDrawer() {
       setShowCategories(false);
       setIsAnimating(false);
     }, 300);
-  };
-
-  // 카테고리 클릭 시 해당 페이지로 이동
-  const handleCategoryClick = (categoryId: string) => {
-    const targetPath = `/articles/category/${categoryId}` as Route;
-    router.push(targetPath);
-    setIsOpen(false);
-    setShowCategories(false);
   };
 
   // 메인 페이지에서는 햄버거 버튼 숨김
@@ -161,90 +155,92 @@ export default function NavigationDrawer() {
       <div
         style={{
           position: "fixed",
-          top: "16px",
-          left: "5%",
+          top: "0",
+          left: "0",
           width: "90%",
           height: "90%",
           maxWidth: "400px",
-          maxHeight: "calc(100vh - 32px)",
+          maxHeight: "100vh",
           backgroundColor: "#ffffff",
           zIndex: 180,
           transform: isOpen ? "scale(1)" : "scale(0)",
           transformOrigin: "top left",
-          transition: "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+          transition: "transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease",
           boxShadow: isOpen ? "4px 4px 24px rgba(0, 0, 0, 0.15)" : "none",
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
-          borderRadius: "12px",
+          borderRadius: "0 0 12px 0",
           opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? "auto" : "none",
         }}
       >
         {/* 드로어 헤더 */}
-<div
-  style={{
-    padding: "24px",
-    borderBottom: "1px solid #e5e5e5",
-    position: "relative",
-    height: "88px", // minHeight 대신 고정 height 사용
-    display: "flex",
-    alignItems: "center",
-  }}
->
-  {/* 닫기 버튼 */}
-  <button
-    onClick={toggleDrawer}
-    style={{
-      position: "absolute",
-      top: "24px",
-      right: "35px",
-      width: "32px",
-      height: "32px",
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: "28px",
-      color: "#111",
-      display: "flex",
-      opacity: "0.5",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: 0,
-      transition: "color 0.2s ease",
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.color = "#111";
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.color = "#666";
-    }}
-    aria-label="메뉴 닫기"
-  >
-    ×
-  </button>
+        <div
+          style={{
+            padding: "24px",
+            borderBottom: "1px solid #e5e5e5",
+            position: "relative",
+            height: "88px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {/* 닫기 버튼 */}
+          <button
+            onClick={toggleDrawer}
+            style={{
+              position: "absolute",
+              top: "24px",
+              right: "35px",
+              width: "32px",
+              height: "32px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "28px",
+              color: "#111",
+              display: "flex",
+              opacity: "0.5",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              transition: "color 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = "#111";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = "#666";
+            }}
+            aria-label="메뉴 닫기"
+          >
+            ×
+          </button>
 
-  {/* Back 버튼 영역 - 항상 존재하되 조건부로 표시 */}
-  <button
-    onClick={handleBack}
-    style={{
-      background: "none",
-      border: "none",
-      fontSize: "18px",
-      fontWeight: "600",
-      color: "#111",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-      padding: 0,
-      opacity: showCategories ? 1 : 0,
-      pointerEvents: showCategories ? "auto" : "none",
-      transition: "opacity 0.3s ease",
-    }}
-  >
-    <span style={{ fontSize: "24px", padding: "0"}}>←</span> Back
-  </button>
-</div>
+          {/* Back 버튼 영역 */}
+          <button
+            onClick={handleBack}
+            style={{
+              background: "none",
+              border: "none",
+              fontSize: "18px",
+              fontWeight: "600",
+              color: "#111",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: 0,
+              opacity: showCategories ? 1 : 0,
+              pointerEvents: showCategories ? "auto" : "none",
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            <span style={{ fontSize: "24px", padding: "0"}}>←</span> Back
+          </button>
+        </div>
+
         {/* 드로어 컨텐츠 */}
         <div
           style={{
@@ -325,7 +321,7 @@ export default function NavigationDrawer() {
             ))}
           </div>
 
-          {/* 카테고리 목록 */}
+          {/* 카테고리 목록 - 클릭 시 드로어 닫기 처리 */}
           <div
             style={{
               opacity: showCategories && !isAnimating ? 1 : 0,
@@ -337,33 +333,47 @@ export default function NavigationDrawer() {
               gap: "8px",
             }}
           >
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                onClick={() => handleCategoryClick(category.id)}
-                style={{
-                  width: "100%",
-                  padding: "16px 20px",
-                  fontSize: "18px",
-                  fontWeight: "500",
-                  color: "#111",
-                  backgroundColor: "transparent",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  transition: "background-color 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f5f5f5";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                }}
-              >
-                {category.title}
-              </button>
-            ))}
+            {categories.map((category) => {
+              const categoryPath = `/articles/category/${category.id}` as Route;
+              const isCurrentPage = pathname === categoryPath;
+              
+              return (
+                <VTLink
+                  key={category.id}
+                  href={categoryPath}
+                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    // 같은 페이지를 클릭한 경우 드로어만 닫기
+                    if (isCurrentPage) {
+                      e.preventDefault();
+                      setIsOpen(false);
+                      setShowCategories(false);
+                    }
+                    // 다른 페이지는 VTLink가 자동으로 처리
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "16px 20px",
+                    fontSize: "18px",
+                    fontWeight: "500",
+                    color: "#111",
+                    backgroundColor: "transparent",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    display: "block",
+                    transition: "background-color 0.2s ease",
+                  }}
+                  onMouseEnter={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.currentTarget.style.backgroundColor = "#f5f5f5";
+                  }}
+                  onMouseLeave={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    e.currentTarget.style.backgroundColor = "transparent";
+                  }}
+                >
+                  {category.title}
+                </VTLink>
+              );
+            })}
 
             {categories.length === 0 && (
               <div
