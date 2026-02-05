@@ -31,10 +31,10 @@ export default function CategoryArticlesPage() {
   const [category, setCategory] = useState<ArticleCategory | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const load = async () => {
     if (!categoryId) return;
-    setLoading(true);
 
     // 카테고리 정보 가져오기
     const { data: cat } = await supabase
@@ -53,6 +53,7 @@ export default function CategoryArticlesPage() {
     setCategory(cat ?? null);
     if (!error && arts) setArticles(arts as Article[]);
     setLoading(false);
+    setIsFirstLoad(false);
   };
 
   useEffect(() => {
@@ -76,10 +77,11 @@ export default function CategoryArticlesPage() {
     }
   };
 
-  if (loading) {
+  // 첫 로딩 시에만 완전히 빈 화면, 이후엔 컨텐츠 유지하며 전환
+  if (loading && isFirstLoad) {
     return (
-      <div className="container-90" style={{ paddingTop: "0px" }}>
-        
+      <div className="container-90" style={{ paddingTop: "0px", minHeight: "100vh" }}>
+        {/* 최소한의 스켈레톤 */}
       </div>
     );
   }
@@ -98,14 +100,19 @@ export default function CategoryArticlesPage() {
             cursor: "pointer",
           }}
         >
-          
+          목록으로
         </button>
       </div>
     );
   }
 
   return (
-    <div className="container-90" style={{ paddingTop: "0px" }}>
+    <div 
+      className="container-90" 
+      style={{ 
+        paddingTop: "0px"
+      }}
+    >
       <div style={{ marginBottom: "32px" }}>
         {category.description && (
           <p style={{ fontSize: "16px", color: "#666" }}>{category.description}</p>
@@ -180,7 +187,7 @@ export default function CategoryArticlesPage() {
 
         {articles.length === 0 && (
           <div style={{ padding: "40px", textAlign: "center", color: "#999" }}>
-            
+            등록된 글이 없습니다.
           </div>
         )}
       </div>

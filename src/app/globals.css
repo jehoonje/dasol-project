@@ -387,3 +387,64 @@ body[data-route="idle"]     [data-page] { opacity: 1; }
 #home-bg-layer { z-index: 0; }
 #home-bg-overlay { z-index: 1; }
 .app-root { z-index: 2; }
+
+
+/* globals.css 하단에 추가 */
+
+/* Route Transition 애니메이션 - 페이드 효과 */
+body[data-route="leaving"] [data-page] {
+  opacity: 0;
+  transition: opacity 0.12s ease-out;
+}
+
+body[data-route="entering"] [data-page] {
+  opacity: 0;
+  animation: fadeIn 0.12s ease-in forwards;
+}
+
+body[data-route="idle"] [data-page] {
+  opacity: 1;
+  transition: opacity 0.12s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 레이아웃 시프트 방지 */
+main {
+  min-height: 100vh;
+  contain: layout style paint;
+}
+
+/* 이미지 로딩 최적화 */
+img {
+  image-rendering: auto;
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+img[loading="lazy"] {
+  content-visibility: auto;
+}
+
+/* 페이지 전환 중 부드러운 처리 */
+[data-page] {
+  will-change: opacity;
+  transition: opacity 0.12s ease;
+}
+
+body[data-route="leaving"] [data-page],
+body[data-route="entering"] [data-page] {
+  pointer-events: none;
+}
+
+/* 추가: 모든 페이지 요소에 페이드 적용 */
+[data-page] > * {
+  transition: inherit;
+}
