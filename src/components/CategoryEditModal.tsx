@@ -99,7 +99,7 @@ export default function CategoryEditModal({
           />
         </div>
 
-        <div style={{ marginBottom: "30px" }}>
+        {/* <div style={{ marginBottom: "30px" }}>
           <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>
             설명
           </label>
@@ -116,7 +116,7 @@ export default function CategoryEditModal({
               resize: "vertical",
             }}
           />
-        </div>
+        </div> */}
 
         <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
           <button

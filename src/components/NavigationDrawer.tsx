@@ -23,25 +23,32 @@ export default function NavigationDrawer() {
   const isRootPage = pathname === "/";
 
   // 카테고리 목록 로드
-  useEffect(() => {
-    const loadCategories = async () => {
-      const { data, error } = await supabase
-        .from("pf_article_categories")
-        .select("*")
-        .order("sort_order", { ascending: true })
-        .order("created_at", { ascending: false });
-      
-      if (!error && data) {
-        setCategories(data as ArticleCategory[]);
-      }
-    };
+  const loadCategories = async () => {
+    const { data, error } = await supabase
+      .from("pf_article_categories")
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    
+    if (!error && data) {
+      setCategories(data as ArticleCategory[]);
+    }
+  };
 
+  // 초기 로드
+  useEffect(() => {
     loadCategories();
   }, []);
 
+  // 드로어가 열릴 때마다 카테고리 목록 새로고침
+  useEffect(() => {
+    if (isOpen) {
+      loadCategories();
+    }
+  }, [isOpen]);
+
   // 페이지 변경 시 드로어 닫기
   useEffect(() => {
-    // 드로어가 열려있을 때만 닫기
     if (isOpen) {
       setIsOpen(false);
       setShowCategories(false);
@@ -58,6 +65,9 @@ export default function NavigationDrawer() {
   const handleArticlesClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsAnimating(true);
+    
+    // 카테고리를 보여주기 전에 최신 목록 로드
+    loadCategories();
     
     setTimeout(() => {
       setShowCategories(true);
@@ -321,7 +331,7 @@ export default function NavigationDrawer() {
             ))}
           </div>
 
-          {/* 카테고리 목록 - 클릭 시 드로어 닫기 처리 */}
+          {/* 카테고리 목록 */}
           <div
             style={{
               opacity: showCategories && !isAnimating ? 1 : 0,
@@ -342,13 +352,11 @@ export default function NavigationDrawer() {
                   key={category.id}
                   href={categoryPath}
                   onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    // 같은 페이지를 클릭한 경우 드로어만 닫기
                     if (isCurrentPage) {
                       e.preventDefault();
                       setIsOpen(false);
                       setShowCategories(false);
                     }
-                    // 다른 페이지는 VTLink가 자동으로 처리
                   }}
                   style={{
                     width: "100%",
