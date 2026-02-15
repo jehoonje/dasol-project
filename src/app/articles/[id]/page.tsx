@@ -70,7 +70,7 @@ export default function ArticleDetailPage() {
 
   return (
     <div className="container-90" style={{ position: "relative", paddingTop: "80px" }}>
-      {isOwner && (
+      {/* {isOwner && (
         <>
           <button
             onClick={() => setShowEditModal(true)}
@@ -134,7 +134,7 @@ export default function ArticleDetailPage() {
             ×
           </button>
         </>
-      )}
+      )} */}
 
       <div className="flex mb-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         {isOwner && <BlockAddButton articleId={article.id} onAdded={load} />}

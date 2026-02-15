@@ -10,6 +10,7 @@ import type { Route } from "next";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import type { ArticleCategory } from "@/app/types";
 import CategoryEditModal from "@/components/CategoryEditModal";
+import ArticleEditModal from "@/components/ArticleEditModal";
 
 const ArticleCreateButton = dynamic(() => import("../../../../components/ArticleCreateButton"), {
   ssr: false,
@@ -34,6 +35,7 @@ export default function CategoryArticlesPage() {
   const [loading, setLoading] = useState(true);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
   const load = async () => {
     if (!categoryId) return;
@@ -115,13 +117,21 @@ export default function CategoryArticlesPage() {
         {category.description && (
           <p style={{ fontSize: "16px", color: "#666" }}>{category.description}</p>
         )}
-        {isOwner && (
+      </div>
+
+      {isOwner && (
+        <div 
+          className="plus-row"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
+          <ArticleCreateButton categoryId={categoryId} onCreated={load} />
           <button
             onClick={() => setShowEditModal(true)}
             style={{
-              position: "absolute",
-              top: 0,
-              right: 0,
               background: "none",
               border: "1px solid #ddd",
               borderRadius: "4px",
@@ -130,14 +140,8 @@ export default function CategoryArticlesPage() {
               fontSize: "14px",
             }}
           >
-            수정
+            카테고리 수정
           </button>
-        )}
-      </div>
-
-      {isOwner && (
-        <div className="plus-row">
-          <ArticleCreateButton categoryId={categoryId} onCreated={load} />
         </div>
       )}
 
@@ -147,40 +151,75 @@ export default function CategoryArticlesPage() {
         {articles.map((a) => (
           <div key={a.id} className="article-card" style={{ position: "relative" }}>
             {isOwner && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDeleteArticle(a.id, a.title);
-                }}
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  border: "none",
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  color: "white",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                  transition: "background-color 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
-                }}
-                title="삭제"
-              >
-                ×
-              </button>
+              <div style={{
+                position: "absolute",
+                top: "8px",
+                right: "8px",
+                display: "flex",
+                gap: "6px",
+                zIndex: 10,
+              }}>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditingArticle(a);
+                  }}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    border: "none",
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    color: "white",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+                  }}
+                  title="수정"
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteArticle(a.id, a.title);
+                  }}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    border: "none",
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    color: "white",
+                    fontSize: "18px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+                  }}
+                  title="삭제"
+                >
+                  ×
+                </button>
+              </div>
             )}
             <VTLink href={`/articles/${a.id}` as Route} data-nopreview="true">
               <h2 className="article-title">{a.title}</h2>
@@ -215,6 +254,19 @@ export default function CategoryArticlesPage() {
           currentDescription={category.description || ""}
           onClose={() => setShowEditModal(false)}
           onUpdated={load}
+        />
+      )}
+
+      {editingArticle && (
+        <ArticleEditModal
+          articleId={editingArticle.id}
+          currentTitle={editingArticle.title}
+          currentCategoryId={editingArticle.category_id}
+          onClose={() => setEditingArticle(null)}
+          onUpdated={() => {
+            load();
+            setEditingArticle(null);
+          }}
         />
       )}
     </div>
