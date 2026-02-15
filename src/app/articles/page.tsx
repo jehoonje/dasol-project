@@ -68,14 +68,16 @@ export default function ArticlesPage() {
                   onClick={() => setEditingCategory(cat)}
                   style={{
                     background: "none",
-                    border: "1px solid #ddd",
-                    borderRadius: "4px",
-                    padding: "4px 12px",
+                    border: "none",
+                    color: "#999",
+                    fontSize: "20px",
                     cursor: "pointer",
-                    fontSize: "14px",
+                    padding: "0",
+                    lineHeight: "1",
                   }}
+                  title="수정"
                 >
-                  수정
+                  ✎
                 </button>
                 <button
                   onClick={() => handleDelete(cat.id, cat.title)}
@@ -85,7 +87,10 @@ export default function ArticlesPage() {
                     color: "#ccc",
                     fontSize: "20px",
                     cursor: "pointer",
+                    padding: "0",
+                    lineHeight: "1",
                   }}
+                  title="삭제"
                 >
                   ×
                 </button>

@@ -129,19 +129,6 @@ export default function CategoryArticlesPage() {
           }}
         >
           <ArticleCreateButton categoryId={categoryId} onCreated={load} />
-          <button
-            onClick={() => setShowEditModal(true)}
-            style={{
-              background: "none",
-              border: "1px solid #ddd",
-              borderRadius: "4px",
-              padding: "6px 12px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            카테고리 수정
-          </button>
         </div>
       )}
 
