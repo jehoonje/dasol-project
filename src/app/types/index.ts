@@ -3,6 +3,7 @@ export type Article = {
   title: string;
   cover_image_url: string | null;
   created_at: string;
+  category_id: string; 
 };
 
 export type ArticleImage = {

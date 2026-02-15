@@ -9,6 +9,7 @@ import VTLink from "@/components/VTLink";
 import type { Route } from "next";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import type { ArticleCategory } from "@/app/types";
+import CategoryEditModal from "@/components/CategoryEditModal";
 
 const ArticleCreateButton = dynamic(() => import("../../../../components/ArticleCreateButton"), {
   ssr: false,
@@ -32,18 +33,17 @@ export default function CategoryArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const load = async () => {
     if (!categoryId) return;
 
-    // 카테고리 정보 가져오기
     const { data: cat } = await supabase
       .from("pf_article_categories")
       .select("*")
       .eq("id", categoryId)
       .single<ArticleCategory>();
 
-    // 해당 카테고리의 글 목록 가져오기
     const { data: arts, error } = await supabase
       .from("pf_articles")
       .select("id, title, cover_image_url, created_at, category_id")
@@ -77,11 +77,9 @@ export default function CategoryArticlesPage() {
     }
   };
 
-  // 첫 로딩 시에만 완전히 빈 화면, 이후엔 컨텐츠 유지하며 전환
   if (loading && isFirstLoad) {
     return (
       <div className="container-90" style={{ paddingTop: "0px", minHeight: "100vh" }}>
-        {/* 최소한의 스켈레톤 */}
       </div>
     );
   }
@@ -113,9 +111,27 @@ export default function CategoryArticlesPage() {
         paddingTop: "0px"
       }}
     >
-      <div style={{ marginBottom: "32px" }}>
+      <div style={{ marginBottom: "32px", position: "relative" }}>
         {category.description && (
           <p style={{ fontSize: "16px", color: "#666" }}>{category.description}</p>
+        )}
+        {isOwner && (
+          <button
+            onClick={() => setShowEditModal(true)}
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              background: "none",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              padding: "6px 12px",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+          >
+            수정
+          </button>
         )}
       </div>
 
@@ -191,6 +207,16 @@ export default function CategoryArticlesPage() {
           </div>
         )}
       </div>
+
+      {showEditModal && category && (
+        <CategoryEditModal
+          categoryId={category.id}
+          currentTitle={category.title}
+          currentDescription={category.description || ""}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={load}
+        />
+      )}
     </div>
   );
 }
