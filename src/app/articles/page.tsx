@@ -1,3 +1,4 @@
+// app/articles/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import VTLink from "@/components/VTLink";
 import type { Route } from "next";
 import { useAuthStore } from "../store/useAuthStore";
 import type { ArticleCategory } from "../types";
+import CategoryEditModal from "@/components/CategoryEditModal";
 
 const CategoryCreateButton = dynamic(() => import("@/components/CategoryCreateButton"), {
   ssr: false,
@@ -15,6 +17,7 @@ const CategoryCreateButton = dynamic(() => import("@/components/CategoryCreateBu
 export default function ArticlesPage() {
   const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingCategory, setEditingCategory] = useState<ArticleCategory | null>(null);
   const isOwner = useAuthStore((state) => state.isOwner);
 
   const load = async () => {
@@ -60,16 +63,33 @@ export default function ArticlesPage() {
             </VTLink>
             
             {isOwner && (
-              <button
-                onClick={() => handleDelete(cat.id, cat.title)}
-                style={{
-                  position: "absolute", right: 0, top: "10px",
-                  background: "none", border: "none", color: "#ccc",
-                  fontSize: "20px", cursor: "pointer"
-                }}
-              >
-                ×
-              </button>
+              <div style={{ position: "absolute", right: 0, top: "10px", display: "flex", gap: "8px" }}>
+                <button
+                  onClick={() => setEditingCategory(cat)}
+                  style={{
+                    background: "none",
+                    border: "1px solid #ddd",
+                    borderRadius: "4px",
+                    padding: "4px 12px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleDelete(cat.id, cat.title)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#ccc",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
             )}
           </div>
         ))}
@@ -77,6 +97,19 @@ export default function ArticlesPage() {
 
       {loading && <p></p>}
       {!loading && categories.length === 0 && <p style={{ color: "#999" }}>등록된 카테고리가 없습니다.</p>}
+
+      {editingCategory && (
+        <CategoryEditModal
+          categoryId={editingCategory.id}
+          currentTitle={editingCategory.title}
+          currentDescription={editingCategory.description || ""}
+          onClose={() => setEditingCategory(null)}
+          onUpdated={() => {
+            load();
+            setEditingCategory(null);
+          }}
+        />
+      )}
     </div>
   );
 }

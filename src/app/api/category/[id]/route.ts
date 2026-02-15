@@ -1,0 +1,54 @@
+// app/api/categories/[id]/route.ts
+import { createClient } from "@supabase/supabase-js";
+import { NextResponse } from "next/server";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
+    }
+
+    // pf_article_categories에도 updated_at이 없으므로 제거
+    const { error } = await supabaseAdmin
+      .from("pf_article_categories")
+      .update({
+        title: body.title,
+        description: body.description,
+        updated_at: new Date().toISOString(), // 다시 추가
+      })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Category 수정 실패:", error);
+      return NextResponse.json(
+        { error: `수정 실패: ${error.message}` },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Category 수정 에러:", error);
+    return NextResponse.json(
+      { error: error?.message ?? "수정 중 오류가 발생했습니다" },
+      { status: 500 }
+    );
+  }
+}

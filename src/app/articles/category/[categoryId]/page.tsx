@@ -9,6 +9,8 @@ import VTLink from "@/components/VTLink";
 import type { Route } from "next";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import type { ArticleCategory } from "@/app/types";
+import CategoryEditModal from "@/components/CategoryEditModal";
+import ArticleEditModal from "@/components/ArticleEditModal";
 
 const ArticleCreateButton = dynamic(() => import("../../../../components/ArticleCreateButton"), {
   ssr: false,
@@ -32,18 +34,18 @@ export default function CategoryArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
   const load = async () => {
     if (!categoryId) return;
 
-    // 카테고리 정보 가져오기
     const { data: cat } = await supabase
       .from("pf_article_categories")
       .select("*")
       .eq("id", categoryId)
       .single<ArticleCategory>();
 
-    // 해당 카테고리의 글 목록 가져오기
     const { data: arts, error } = await supabase
       .from("pf_articles")
       .select("id, title, cover_image_url, created_at, category_id")
@@ -77,11 +79,9 @@ export default function CategoryArticlesPage() {
     }
   };
 
-  // 첫 로딩 시에만 완전히 빈 화면, 이후엔 컨텐츠 유지하며 전환
   if (loading && isFirstLoad) {
     return (
       <div className="container-90" style={{ paddingTop: "0px", minHeight: "100vh" }}>
-        {/* 최소한의 스켈레톤 */}
       </div>
     );
   }
@@ -113,15 +113,35 @@ export default function CategoryArticlesPage() {
         paddingTop: "0px"
       }}
     >
-      <div style={{ marginBottom: "32px" }}>
+      <div style={{ marginBottom: "32px", position: "relative" }}>
         {category.description && (
           <p style={{ fontSize: "16px", color: "#666" }}>{category.description}</p>
         )}
       </div>
 
       {isOwner && (
-        <div className="plus-row">
+        <div 
+          className="plus-row"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center"
+          }}
+        >
           <ArticleCreateButton categoryId={categoryId} onCreated={load} />
+          <button
+            onClick={() => setShowEditModal(true)}
+            style={{
+              background: "none",
+              border: "1px solid #ddd",
+              borderRadius: "4px",
+              padding: "6px 12px",
+              cursor: "pointer",
+              fontSize: "14px",
+            }}
+          >
+            카테고리 수정
+          </button>
         </div>
       )}
 
@@ -131,40 +151,75 @@ export default function CategoryArticlesPage() {
         {articles.map((a) => (
           <div key={a.id} className="article-card" style={{ position: "relative" }}>
             {isOwner && (
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDeleteArticle(a.id, a.title);
-                }}
-                style={{
-                  position: "absolute",
-                  top: "8px",
-                  right: "8px",
-                  width: "32px",
-                  height: "32px",
-                  borderRadius: "50%",
-                  border: "none",
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  color: "white",
-                  fontSize: "18px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  zIndex: 10,
-                  transition: "background-color 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
-                }}
-                title="삭제"
-              >
-                ×
-              </button>
+              <div style={{
+                position: "absolute",
+                top: "8px",
+                right: "8px",
+                display: "flex",
+                gap: "6px",
+                zIndex: 10,
+              }}>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditingArticle(a);
+                  }}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    border: "none",
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    color: "white",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+                  }}
+                  title="수정"
+                >
+                  ✎
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteArticle(a.id, a.title);
+                  }}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    border: "none",
+                    backgroundColor: "rgba(0, 0, 0, 0.6)",
+                    color: "white",
+                    fontSize: "18px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "background-color 0.2s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+                  }}
+                  title="삭제"
+                >
+                  ×
+                </button>
+              </div>
             )}
             <VTLink href={`/articles/${a.id}` as Route} data-nopreview="true">
               <h2 className="article-title">{a.title}</h2>
@@ -191,6 +246,29 @@ export default function CategoryArticlesPage() {
           </div>
         )}
       </div>
+
+      {showEditModal && category && (
+        <CategoryEditModal
+          categoryId={category.id}
+          currentTitle={category.title}
+          currentDescription={category.description || ""}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={load}
+        />
+      )}
+
+      {editingArticle && (
+        <ArticleEditModal
+          articleId={editingArticle.id}
+          currentTitle={editingArticle.title}
+          currentCategoryId={editingArticle.category_id}
+          onClose={() => setEditingArticle(null)}
+          onUpdated={() => {
+            load();
+            setEditingArticle(null);
+          }}
+        />
+      )}
     </div>
   );
 }

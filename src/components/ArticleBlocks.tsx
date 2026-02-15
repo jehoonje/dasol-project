@@ -1,95 +1,309 @@
+// components/ArticleBlocks.tsx
 "use client";
 
+import { useState } from "react";
 import type { ArticleBlock } from "../app/types";
 import GalleryGrid from "./GalleryGrid";
+import BlockEditModal from "./BlockEditModal";
+import { useAuthStore } from "@/app/store/useAuthStore";
 
-export default function ArticleBlocks({ blocks }: { blocks: ArticleBlock[] }) {
+export default function ArticleBlocks({
+  blocks,
+  onBlocksChange,
+}: {
+  blocks: ArticleBlock[];
+  onBlocksChange?: () => void;
+}) {
+  const isOwner = useAuthStore((state) => state.isOwner);
+  const [editingBlock, setEditingBlock] = useState<ArticleBlock | null>(null);
+
+  const handleDelete = async (blockId: string) => {
+    if (!confirm("이 블록을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/blocks/${blockId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        throw new Error(json.error || "삭제 실패");
+      }
+      alert("삭제되었습니다.");
+      onBlocksChange?.();
+    } catch (error: any) {
+      alert(`삭제 실패: ${error.message}`);
+    }
+  };
+
   return (
-    <div className="vstack">
-      {blocks.map((b) => {
-        if (b.block_type === "text") {
-          return (
-            <div key={b.id} className="block-center article-text-block">
-              <div className="article-text-card">
-                <div style={{ whiteSpace: "pre-wrap" }}>{b.text_content}</div>
-              </div>
-            </div>
-          );
-        }
-
-        if (b.block_type === "text_image") {
-          return (
-            <div key={b.id} className="block-center text-image-block">
-              <div
-                className="text-image-grid"
-                style={{
-                  display: "grid",
-                  // 모바일 포함 항상 2열 유지 (좌 텍스트가 살짝 더 넓게)
-                  gridTemplateColumns: "minmax(140px, 1.2fr) minmax(140px, 1fr)",
-                  gap: 12,
-                  alignItems: "stretch",
-                }}
-              >
-                {/* 좌측: 텍스트 */}
-                <div className="text-panel" style={{ display: "grid", placeItems: "center" }}>
+    <>
+      <div className="vstack">
+        {blocks.map((b) => {
+          if (b.block_type === "text") {
+            return (
+              <div key={b.id} className="block-center article-text-block" style={{ position: "relative" }}>
+                {isOwner && (
+                  <div style={{ 
+                    position: "absolute", 
+                    top: "12px", 
+                    right: "12px", 
+                    display: "flex", 
+                    gap: "6px", 
+                    zIndex: 10 
+                  }}>
+                    <button
+                      onClick={() => setEditingBlock(b)}
+                      style={{
+                        padding: "4px 10px",
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDelete(b.id)}
+                      style={{
+                        padding: "4px 10px",
+                        backgroundColor: "rgba(220, 38, 38, 0.7)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.7)";
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
+                <div className="article-text-card">
                   <div style={{ whiteSpace: "pre-wrap" }}>{b.text_content}</div>
                 </div>
-        
-                {/* 우측: 이미지 */}
-                <div className="image-panel">
+              </div>
+            );
+          }
+
+          if (b.block_type === "text_image") {
+            return (
+              <div key={b.id} className="block-center text-image-block" style={{ position: "relative" }}>
+                {isOwner && (
+                  <div style={{ 
+                    position: "absolute", 
+                    top: "12px", 
+                    right: "12px", 
+                    display: "flex", 
+                    gap: "6px", 
+                    zIndex: 10 
+                  }}>
+                    <button
+                      onClick={() => setEditingBlock(b)}
+                      style={{
+                        padding: "4px 10px",
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+                      }}
+                    >
+                      수정
+                    </button>
+                    <button
+                      onClick={() => handleDelete(b.id)}
+                      style={{
+                        padding: "4px 10px",
+                        backgroundColor: "rgba(220, 38, 38, 0.7)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.7)";
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
+                <div
+                  className="text-image-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "minmax(140px, 1.2fr) minmax(140px, 1fr)",
+                    gap: 12,
+                    alignItems: "stretch",
+                  }}
+                >
+                  <div className="text-panel" style={{ display: "grid", placeItems: "center" }}>
+                    <div style={{ whiteSpace: "pre-wrap" }}>{b.text_content}</div>
+                  </div>
+                  <div className="image-panel">
+                    {b.image_url ? (
+                      <img
+                        src={b.image_url}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                          border: "1px solid #eee",
+                          background: "#fff",
+                        }}
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div style={{ padding: 16, textAlign: "center" }}>이미지 없음</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (b.block_type === "image") {
+            return (
+              <div key={b.id} className="block-center single-image-block" style={{ position: "relative" }}>
+                {isOwner && (
+                  <div style={{ 
+                    position: "absolute", 
+                    top: "12px", 
+                    right: "12px", 
+                    display: "flex", 
+                    gap: "6px", 
+                    zIndex: 10 
+                  }}>
+                    <button
+                      onClick={() => handleDelete(b.id)}
+                      style={{
+                        padding: "4px 10px",
+                        backgroundColor: "rgba(220, 38, 38, 0.7)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        transition: "background-color 0.2s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.7)";
+                      }}
+                    >
+                      삭제
+                    </button>
+                  </div>
+                )}
+                <div className="single-image-wrap">
                   {b.image_url ? (
                     <img
                       src={b.image_url}
                       alt=""
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",  // 세로가 길어도 카드 안에 꽉 차게
-                        display: "block",
-                        border: "1px solid #eee",
-                        background: "#fff",
-                      }}
-                      loading="lazy"
+                      style={{ width: "100%", height: "auto", display: "block", border: "1px solid #eee", background: "#fff" }}
                     />
                   ) : (
                     <div style={{ padding: 16, textAlign: "center" }}>이미지 없음</div>
                   )}
                 </div>
               </div>
-            </div>
-          );
-        }
+            );
+          }
 
-        if (b.block_type === "image") {
+          const images = Array.isArray(b.images)
+            ? b.images.map((u, i) => ({ id: `${b.id}-${i}`, image_url: u, sort_order: i }))
+            : [];
           return (
-            <div key={b.id} className="block-center single-image-block">
-              <div className="single-image-wrap">
-                {b.image_url ? (
-                  <img
-                    src={b.image_url}
-                    alt=""
-                    style={{ width: "100%", height: "auto", display: "block", border: "1px solid #eee", background:"#fff" }}
-                  />
-                ) : (
-                  <div style={{ padding: 16, textAlign: "center" }}>이미지 없음</div>
-                )}
+            <div key={b.id} className="block-center patterned-block" style={{ position: "relative" }}>
+              {isOwner && (
+                <div style={{ 
+                  position: "absolute", 
+                  top: "12px", 
+                  right: "12px", 
+                  display: "flex", 
+                  gap: "6px", 
+                  zIndex: 10 
+                }}>
+                  <button
+                    onClick={() => handleDelete(b.id)}
+                    style={{
+                      padding: "4px 10px",
+                      backgroundColor: "rgba(220, 38, 38, 0.7)",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "12px",
+                      fontWeight: "500",
+                      transition: "background-color 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.7)";
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
+              <div style={{ width: "100%", maxWidth: "var(--container-max)" }}>
+                <GalleryGrid images={images} />
               </div>
             </div>
           );
-        }
+        })}
+      </div>
 
-        // patterned: 내부 갤러리 컴포넌트 그대로 사용
-        const images = Array.isArray(b.images)
-          ? b.images.map((u, i) => ({ id: `${b.id}-${i}`, image_url: u, sort_order: i }))
-          : [];
-        return (
-          <div key={b.id} className="block-center patterned-block">
-            <div style={{ width: "100%", maxWidth: "var(--container-max)" }}>
-              <GalleryGrid images={images} />
-            </div>
-          </div>
-        );
-      })}
-    </div>
+      {editingBlock && (
+        <BlockEditModal
+          block={editingBlock}
+          onClose={() => setEditingBlock(null)}
+          onUpdated={() => {
+            onBlocksChange?.();
+            setEditingBlock(null);
+          }}
+        />
+      )}
+    </>
   );
 }

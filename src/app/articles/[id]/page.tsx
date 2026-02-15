@@ -1,3 +1,4 @@
+// app/articles/[id]/page.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,8 +8,8 @@ import { supabase } from "../../lib/supabaseClient";
 import type { Article, ArticleBlock } from "../../types";
 import ArticleBlocks from "@/components/ArticleBlocks";
 import { useAuthStore } from "../../store/useAuthStore";
+import ArticleEditModal from "@/components/ArticleEditModal";
 
-// 편집 버튼은 동적 로드
 const BlockAddButton = dynamic(() => import("@/components/BlockAddButton"), {
   ssr: false,
 });
@@ -22,6 +23,7 @@ export default function ArticleDetailPage() {
   const [article, setArticle] = useState<Article | null>(null);
   const [blocks, setBlocks] = useState<ArticleBlock[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const load = async () => {
     if (!id) return;
@@ -64,52 +66,93 @@ export default function ArticleDetailPage() {
     }
   };
 
-  
   if (!article) return <div className="container-90" style={{ paddingTop: "0px" }}><h1></h1></div>;
 
   return (
     <div className="container-90" style={{ position: "relative", paddingTop: "80px" }}>
-      {isOwner && (
-        <button
-          onClick={handleDelete}
-          style={{
-            position: "fixed",
-            top: "80px",
-            right: "5%",
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            border: "none",
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
-            color: "white",
-            fontSize: "24px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 50,
-            transition: "background-color 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
-          }}
-          title="삭제"
-        >
-          ×
-        </button>
-      )}
+      {/* {isOwner && (
+        <>
+          <button
+            onClick={() => setShowEditModal(true)}
+            style={{
+              position: "fixed",
+              top: "80px",
+              right: "calc(5% + 50px)",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              border: "none",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              color: "white",
+              fontSize: "20px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 50,
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+            }}
+            title="수정"
+          >
+            ✎
+          </button>
+
+          <button
+            onClick={handleDelete}
+            style={{
+              position: "fixed",
+              top: "80px",
+              right: "5%",
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              border: "none",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              color: "white",
+              fontSize: "24px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 50,
+              transition: "background-color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+            }}
+            title="삭제"
+          >
+            ×
+          </button>
+        </>
+      )} */}
 
       <div className="flex mb-3" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        {/* <h1 className="mt-2 mb-2">{article.title}</h1> */}
         {isOwner && <BlockAddButton articleId={article.id} onAdded={load} />}
       </div>
 
       <div className="pb-[30%]" style={{}}>
-      <ArticleBlocks blocks={blocks} />
+        <ArticleBlocks blocks={blocks} onBlocksChange={load} />
       </div>
+
+      {showEditModal && (
+        <ArticleEditModal
+          articleId={article.id}
+          currentTitle={article.title}
+          currentCategoryId={article.category_id}
+          onClose={() => setShowEditModal(false)}
+          onUpdated={load}
+        />
+      )}
     </div>
   );
 }
