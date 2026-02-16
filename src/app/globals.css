@@ -132,8 +132,16 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* 모달 스타일 */
 .modal-backdrop {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  display: flex; align-items: center; justify-content: center; z-index: 9999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;  /* 화면 너비 전체 */
+  height: 100vh; /* 화면 높이 전체 */
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 .modal-content { z-index: 9999; background: #fff; color: #333; border: 0px solid #ccc; width: 92%; max-width: 520px; padding: 16px; }
 .modal-header { font-weight: 700; margin-bottom: 12px; }
