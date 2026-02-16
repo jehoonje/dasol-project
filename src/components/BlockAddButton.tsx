@@ -41,15 +41,26 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
     return 0;
   };
 
-  const uploadOne = async (bucket: string, file: File, path: string) => {
-    const fd = new FormData();
-    fd.append("bucket", bucket);
-    fd.append("file", file);
-    fd.append("path", path);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json?.error ?? "upload failed");
-    return json.publicUrl as string;
+  // BlockAddButton.tsx 내부 함수 수정
+  const uploadOne = async (bucket: string, file: File, pathPrefix: string) => {
+    // 1. 파일명에서 한글 및 공백을 제거하거나 안전한 문자로 변경
+    // 오직 영문, 숫자, 마침표(.), 하이픈(-), 언더바(_)만 남깁니다.
+    const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    
+    // 2. 새로운 안전한 경로 생성
+    const safePath = `${pathPrefix}/${Date.now()}_${safeFileName}`;
+  
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(safePath, file);
+  
+    if (error) throw error;
+  
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(safePath);
+  
+    return publicUrl;
   };
 
   const submitText = async () => {
@@ -129,29 +140,33 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
   };
 
   const submitPatterned = async () => {
-    if (!imgs || imgs.length === 0) return alert("이미지를 한 장 이상 선택해 주세요.");
+    if (!imgs || imgs.length === 0) return alert("이미지를 선택해 주세요.");
     setLoading(true);
     try {
       const sort = await getNextSort();
       const files = Array.from(imgs);
-      const urls: string[] = [];
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        const url = await uploadOne("pf_article_images", f, `blocks/${articleId}/${Date.now()}_${i}_${f.name}`);
-        urls.push(url);
-      }
+      
+      // 병렬 업로드로 속도 개선
+      const uploadPromises = files.map((f, i) => 
+        // 파일명을 직접 조립하지 않고 폴더 경로만 넘겨줍니다.
+        uploadOne("pf_article_images", f, `blocks/${articleId}`)
+      );
+      
+      const urls = await Promise.all(uploadPromises);
+  
       const { error } = await supabase.from("pf_article_blocks").insert({
         article_id: articleId,
         block_type: "patterned",
-        images: urls,
+        images: urls as any, // DB 타입이 JSONB인지 꼭 확인하세요!
         sort_order: sort,
       });
+      
       if (error) throw error;
       setOpen(false);
       resetForm();
       onAdded?.();
     } catch (e: any) {
-      alert(e?.message ?? e);
+      alert(`업로드 실패: ${e.message}`);
     } finally {
       setLoading(false);
     }
