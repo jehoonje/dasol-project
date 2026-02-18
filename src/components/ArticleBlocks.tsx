@@ -183,7 +183,7 @@ export default function ArticleBlocks({
                           height: "100%",
                           objectFit: "cover",
                           display: "block",
-                          border: "1px solid #eee",
+                          border: "0px solid #eee",
                           background: "#fff",
                         }}
                         loading="lazy"

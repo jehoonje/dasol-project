@@ -8,6 +8,7 @@ type ArticleImage = { id: string; image_url: string; sort_order: number };
 /**
  * Masonry(Grid row span) + 반응형
  * - 모바일에서도 2~3열 유지: min width를 clamp(96px, 30vw, 180px)로 낮춰 auto-fill이 1열로 무너지지 않게 함
+ * - auto-fit으로 변경하여 실제 아이템 개수만큼만 열 생성, 빈 공간 없이 가로 전체 사용
  */
 export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
   const [open, setOpen] = useState(false);
@@ -29,11 +30,12 @@ export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
   // ✅ 반응형 열 정의
   // - 2장이면 2열 정확히 분할
   // - 3장 이상이면 min width를 clamp로 낮춰 모바일에서도 2~3열 유지
+  // - auto-fit으로 변경하여 실제 아이템 개수만큼만 열 생성, 빈 공간 없이 가로 전체 사용
   const gridTemplateColumns = useMemo(() => {
     if (!images || images.length === 0)
-      return "repeat(auto-fill, minmax(clamp(96px, 30vw, 180px), 1fr))";
+      return "repeat(auto-fit, minmax(clamp(96px, 30vw, 180px), 1fr))";
     if (images.length === 2) return "repeat(2, minmax(0, 1fr))";
-    return "repeat(auto-fill, minmax(clamp(96px, 30vw, 180px), 1fr))";
+    return "repeat(auto-fit, minmax(clamp(96px, 30vw, 180px), 1fr))";
   }, [images]);
 
   const recalcSpans = () => {
@@ -80,7 +82,7 @@ export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
             ref={setWrapperRef(img.id)}
             style={{
               gridRowEnd: `span ${spans[img.id] ?? 1}`,
-              border: "1px solid #eee",
+              border: "0px solid #eee",
               background: "#fff",
             }}
           >

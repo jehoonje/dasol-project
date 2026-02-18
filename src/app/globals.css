@@ -115,10 +115,10 @@ img { max-width: 100%; height: auto; display: block; }
 .page { padding: 16px 0 64px; }
 
 .list { display: flex; flex-direction: column; gap: 24px; }
-.article-card { border-bottom: 1px solid #e5e5e5; padding-bottom: 24px; }
+.article-card { border-bottom: 0px solid #e5e5e5; padding-bottom: 24px; }
 .article-title { font-size: 30px; font-weight: bold; margin: 0 0 8px 0; text-align: left; }
 
-.grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+.grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
 
 .plus-row {
   border-bottom: 0px solid #e5e5e5;
