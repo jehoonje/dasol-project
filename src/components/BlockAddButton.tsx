@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import Modal from "./Modal";
 import { supabase } from "../app/lib/supabaseClient";
 
@@ -11,19 +12,40 @@ type Props = {
 
 type Mode = "menu" | "text" | "text_image" | "image" | "patterned";
 
+interface ColoredSegment {
+  text: string;
+  color: string;
+}
+
 export default function BlockAddButton({ articleId, onAdded }: Props) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<Mode>("menu");
   const [loading, setLoading] = useState(false);
 
-  // 공통 입력 상태
-  const [text, setText] = useState("");
+  // 리치 텍스트 에디터 상태
+  const [segments, setSegments] = useState<ColoredSegment[]>([]);
+  const [currentText, setCurrentText] = useState("");
+  const [currentColor, setCurrentColor] = useState("#333333");
+  const [customColor, setCustomColor] = useState("#333333");
+  
   const [img, setImg] = useState<File | null>(null);
   const [imgs, setImgs] = useState<FileList | null>(null);
-  const [img2, setImg2] = useState<File | null>(null); // text_image 용
+  const [img2, setImg2] = useState<File | null>(null);
+
+  // 기본 색상 팔레트
+  const colorPalette = [
+    "#333333", "#E53E3E", "#DD6B20", "#D69E2E", 
+    "#38A169", "#3182CE", "#805AD5", "#D53F8C", 
+    "#718096", "#FFFFFF"
+  ];
+
+
 
   const resetForm = () => {
-    setText("");
+    setSegments([]);
+    setCurrentText("");
+    setCurrentColor("#333333");
+    setCustomColor("#333333");
     setImg(null);
     setImg2(null);
     setImgs(null);
@@ -41,13 +63,8 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
     return 0;
   };
 
-  // BlockAddButton.tsx 내부 함수 수정
   const uploadOne = async (bucket: string, file: File, pathPrefix: string) => {
-    // 1. 파일명에서 한글 및 공백을 제거하거나 안전한 문자로 변경
-    // 오직 영문, 숫자, 마침표(.), 하이픈(-), 언더바(_)만 남깁니다.
     const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    
-    // 2. 새로운 안전한 경로 생성
     const safePath = `${pathPrefix}/${Date.now()}_${safeFileName}`;
   
     const { data, error } = await supabase.storage
@@ -63,15 +80,58 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
     return publicUrl;
   };
 
+  // 현재 입력된 텍스트를 세그먼트에 추가
+  const addSegment = () => {
+    if (currentText.trim()) {
+      setSegments([...segments, { text: currentText, color: currentColor }]);
+      setCurrentText("");
+    }
+  };
+
+  // 세그먼트 삭제
+  const removeSegment = (index: number) => {
+    setSegments(segments.filter((_, i) => i !== index));
+  };
+
+  // HTML 엔티티 이스케이프 (XSS 방지)
+  const escapeHtml = (text: string) => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  };
+
+  // 세그먼트들을 HTML로 변환 (띄어쓰기 유지)
+  const segmentsToHtml = (segs: ColoredSegment[]) => {
+    return segs.map(seg => {
+      const lines = seg.text.split('\n');
+      return lines.map(line => {
+        if (line.trim() === '') return '<br>';
+        // 연속된 공백을 &nbsp;로 변환하여 띄어쓰기 유지
+        const escaped = escapeHtml(line);
+        const withSpaces = escaped.replace(/ {2,}/g, (match) => '&nbsp;'.repeat(match.length));
+        return `<span style="color: ${seg.color}">${withSpaces}</span>`;
+      }).join('<br>');
+    }).join('');
+  };
+
   const submitText = async () => {
-    if (!text.trim()) return alert("텍스트를 입력해 주세요.");
+    const finalSegments = currentText.trim() 
+      ? [...segments, { text: currentText, color: currentColor }]
+      : segments;
+
+    if (finalSegments.length === 0) {
+      return alert("텍스트를 입력해 주세요.");
+    }
+
     setLoading(true);
     try {
       const sort = await getNextSort();
+      const htmlContent = segmentsToHtml(finalSegments);
+      
       const { error } = await supabase.from("pf_article_blocks").insert({
         article_id: articleId,
         block_type: "text",
-        text_content: text,
+        text_content: htmlContent,
         sort_order: sort,
       });
       if (error) throw error;
@@ -86,21 +146,27 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
   };
 
   const submitTextImage = async () => {
-    if (!text.trim()) return alert("텍스트를 입력해 주세요.");
-    if (!img && !img2) return alert("왼쪽/오른쪽 중 최소 1개의 이미지를 선택해 주세요.");
-    // 요구사항: 텍스트와 이미지 1세트(가로 50%씩)
-    // 텍스트는 가운데 정렬 컨테이너, 이미지는 업로드 후 URL 저장
+    const finalSegments = currentText.trim() 
+      ? [...segments, { text: currentText, color: currentColor }]
+      : segments;
+
+    if (finalSegments.length === 0) {
+      return alert("텍스트를 입력해 주세요.");
+    }
+    if (!img && !img2) return alert("이미지를 선택해 주세요.");
+    
     setLoading(true);
     try {
       const sort = await getNextSort();
-      const leftIsText = true; // 텍스트 좌측, 이미지 우측 (간단 버전). 필요 시 토글 UI 추가 가능
       const imageFile = img ?? img2!;
       const url = await uploadOne("pf_article_images", imageFile, `blocks/${articleId}/${Date.now()}_${imageFile.name}`);
+
+      const htmlContent = segmentsToHtml(finalSegments);
 
       const payload = {
         article_id: articleId,
         block_type: "text_image" as const,
-        text_content: text,
+        text_content: htmlContent,
         image_url: url,
         sort_order: sort,
       };
@@ -146,9 +212,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
       const sort = await getNextSort();
       const files = Array.from(imgs);
       
-      // 병렬 업로드로 속도 개선
       const uploadPromises = files.map((f, i) => 
-        // 파일명을 직접 조립하지 않고 폴더 경로만 넘겨줍니다.
         uploadOne("pf_article_images", f, `blocks/${articleId}`)
       );
       
@@ -157,7 +221,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
       const { error } = await supabase.from("pf_article_blocks").insert({
         article_id: articleId,
         block_type: "patterned",
-        images: urls as any, // DB 타입이 JSONB인지 꼭 확인하세요!
+        images: urls as any,
         sort_order: sort,
       });
       
@@ -180,94 +244,612 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
         ＋ Add Post
       </button>
 
-      <Modal
-        open={open}
-        title={mode === "menu" ? "Add a block" :
-               mode === "text" ? "Text block" :
-               mode === "text_image" ? "Text with Image" :
-               mode === "image" ? "Image block" :
-               "Patterned Images"}
-        onClose={() => !loading && (setOpen(false), setTimeout(resetForm, 0))}
-        actions={
-          mode === "menu" ? null : (
-            <>
+      {/* Portal을 사용하여 body에 직접 렌더링 */}
+      {open && typeof window !== 'undefined' && createPortal(
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "20px",
+            overflow: "auto"
+          }}
+          onClick={() => !loading && setOpen(false)}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "4px",
+              width: "100%",
+              maxWidth: "580px",
+              maxHeight: "90vh",
+              overflow: "auto",
+              padding: "24px"
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+              {/* 헤더 */}
+              <div style={{ 
+                marginBottom: "20px",
+                paddingBottom: "12px",
+                borderBottom: "1px solid #e5e5e5"
+              }}>
+                <h3 style={{ 
+                  margin: 0, 
+                  fontSize: "18px", 
+                  fontWeight: "600",
+                  color: "#111"
+                }}>
+                  {mode === "menu" ? "Add a block" :
+                   mode === "text" ? "Text block" :
+                   mode === "text_image" ? "Text with Image" :
+                   mode === "image" ? "Image block" :
+                   "Patterned Images"}
+                </h3>
+              </div>
+
+              {/* 메뉴 */}
+              {mode === "menu" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <button 
+                    className="button" 
+                    onClick={() => setMode("text")}
+                    style={{ 
+                      padding: "12px", 
+                      textAlign: "left",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Text
+                  </button>
+                  <button 
+                    className="button" 
+                    onClick={() => setMode("text_image")}
+                    style={{ 
+                      padding: "12px", 
+                      textAlign: "left",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Text with Image
+                  </button>
+                  <button 
+                    className="button" 
+                    onClick={() => setMode("image")}
+                    style={{ 
+                      padding: "12px", 
+                      textAlign: "left",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Image
+                  </button>
+                  <button 
+                    className="button" 
+                    onClick={() => setMode("patterned")}
+                    style={{ 
+                      padding: "12px", 
+                      textAlign: "left",
+                      fontSize: "14px"
+                    }}
+                  >
+                    Patterned image
+                  </button>
+                </div>
+              )}
+
+              {/* Text 블록 */}
               {mode === "text" && (
-                <button className="button primary" onClick={submitText} disabled={loading}>
-                  {loading ? "저장 중..." : "추가"}
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* 색상 선택 */}
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Color</div>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+                      {colorPalette.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setCurrentColor(color)}
+                          style={{
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "50%",
+                            backgroundColor: color,
+                            border: currentColor === color ? "2px solid #111" : "1px solid #ddd",
+                            cursor: "pointer",
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      <input
+                        type="color"
+                        value={customColor}
+                        onChange={(e) => {
+                          setCustomColor(e.target.value);
+                          setCurrentColor(e.target.value);
+                        }}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <span style={{ fontSize: "12px", color: "#999", fontFamily: "monospace" }}>
+                        {currentColor}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 텍스트 입력 */}
+                  <div>
+                    <textarea 
+                      className="input" 
+                      rows={4} 
+                      value={currentText} 
+                      onChange={(e) => setCurrentText(e.target.value)}
+                      style={{
+                        width: "100%",
+                        color: currentColor,
+                        fontSize: "14px",
+                        lineHeight: "1.5"
+                      }}
+                      placeholder="Type here..."
+                    />
+                    <button
+                      onClick={addSegment}
+                      disabled={!currentText.trim()}
+                      style={{
+                        marginTop: "8px",
+                        padding: "8px 14px",
+                        backgroundColor: currentText.trim() ? "#111" : "#ddd",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "3px",
+                        cursor: currentText.trim() ? "pointer" : "not-allowed",
+                        fontSize: "13px",
+                        width: "100%"
+                      }}
+                    >
+                      Add segment
+                    </button>
+                  </div>
+
+                  {/* 세그먼트 목록 */}
+                  {segments.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      {segments.map((seg, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "8px",
+                            backgroundColor: "#f9f9f9",
+                            borderRadius: "3px"
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "16px",
+                              height: "16px",
+                              borderRadius: "2px",
+                              backgroundColor: seg.color,
+                              border: "1px solid #ddd",
+                              flexShrink: 0
+                            }}
+                          />
+                          <div
+                            style={{
+                              flex: 1,
+                              color: seg.color,
+                              fontSize: "13px",
+                              whiteSpace: "pre-wrap",
+                              wordBreak: "break-word"
+                            }}
+                          >
+                            {seg.text}
+                          </div>
+                          <button
+                            onClick={() => removeSegment(idx)}
+                            style={{
+                              padding: "2px 6px",
+                              backgroundColor: "#e53e3e",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "2px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              flexShrink: 0
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 미리보기 */}
+                  {(segments.length > 0 || currentText) && (
+                    <div>
+                      <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Preview</div>
+                      <div 
+                        style={{
+                          padding: "12px",
+                          backgroundColor: "#fafafa",
+                          borderRadius: "3px",
+                          fontSize: "14px",
+                          lineHeight: "1.6",
+                          whiteSpace: "pre-wrap"
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: segmentsToHtml([
+                            ...segments,
+                            ...(currentText.trim() ? [{ text: currentText, color: currentColor }] : [])
+                          ])
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* 액션 버튼 */}
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <button
+                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "3px",
+                        backgroundColor: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitText}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "3px",
+                        backgroundColor: loading ? "#ddd" : "#111",
+                        color: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      {loading ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                </div>
               )}
+
+              {/* Text + Image 블록 */}
               {mode === "text_image" && (
-                <button className="button primary" onClick={submitTextImage} disabled={loading}>
-                  {loading ? "업로드 중..." : "추가"}
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* 색상 선택 */}
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Color</div>
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "8px" }}>
+                      {colorPalette.map((color) => (
+                        <button
+                          key={color}
+                          onClick={() => setCurrentColor(color)}
+                          style={{
+                            width: "28px",
+                            height: "28px",
+                            borderRadius: "50%",
+                            backgroundColor: color,
+                            border: currentColor === color ? "2px solid #111" : "1px solid #ddd",
+                            cursor: "pointer",
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                      <input
+                        type="color"
+                        value={customColor}
+                        onChange={(e) => {
+                          setCustomColor(e.target.value);
+                          setCurrentColor(e.target.value);
+                        }}
+                        style={{
+                          width: "32px",
+                          height: "32px",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <span style={{ fontSize: "12px", color: "#999", fontFamily: "monospace" }}>
+                        {currentColor}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 텍스트 입력 */}
+                  <div>
+                    <textarea 
+                      className="input" 
+                      rows={4} 
+                      value={currentText} 
+                      onChange={(e) => setCurrentText(e.target.value)}
+                      style={{
+                        width: "100%",
+                        color: currentColor,
+                        fontSize: "14px",
+                        lineHeight: "1.5"
+                      }}
+                      placeholder="Type here..."
+                    />
+                    <button
+                      onClick={addSegment}
+                      disabled={!currentText.trim()}
+                      style={{
+                        marginTop: "8px",
+                        padding: "8px 14px",
+                        backgroundColor: currentText.trim() ? "#111" : "#ddd",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "3px",
+                        cursor: currentText.trim() ? "pointer" : "not-allowed",
+                        fontSize: "13px",
+                        width: "100%"
+                      }}
+                    >
+                      Add segment
+                    </button>
+                  </div>
+
+                  {/* 세그먼트 목록 */}
+                  {segments.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      {segments.map((seg, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            padding: "8px",
+                            backgroundColor: "#f9f9f9",
+                            borderRadius: "3px"
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: "16px",
+                              height: "16px",
+                              borderRadius: "2px",
+                              backgroundColor: seg.color,
+                              border: "1px solid #ddd",
+                              flexShrink: 0
+                            }}
+                          />
+                          <div
+                            style={{
+                              flex: 1,
+                              color: seg.color,
+                              fontSize: "13px",
+                              whiteSpace: "pre-wrap",
+                              wordBreak: "break-word"
+                            }}
+                          >
+                            {seg.text}
+                          </div>
+                          <button
+                            onClick={() => removeSegment(idx)}
+                            style={{
+                              padding: "2px 6px",
+                              backgroundColor: "#e53e3e",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "2px",
+                              cursor: "pointer",
+                              fontSize: "11px",
+                              flexShrink: 0
+                            }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 미리보기 */}
+                  {(segments.length > 0 || currentText) && (
+                    <div>
+                      <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Preview</div>
+                      <div 
+                        style={{
+                          padding: "12px",
+                          backgroundColor: "#fafafa",
+                          borderRadius: "3px",
+                          fontSize: "14px",
+                          lineHeight: "1.6",
+                          whiteSpace: "pre-wrap"
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: segmentsToHtml([
+                            ...segments,
+                            ...(currentText.trim() ? [{ text: currentText, color: currentColor }] : [])
+                          ])
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* 이미지 업로드 */}
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Image</div>
+                    <input 
+                      className="file" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e)=>setImg(e.target.files?.[0] ?? null)}
+                      style={{ fontSize: "13px" }}
+                    />
+                  </div>
+
+                  {/* 액션 버튼 */}
+                  <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+                    <button
+                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "3px",
+                        backgroundColor: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitTextImage}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "3px",
+                        backgroundColor: loading ? "#ddd" : "#111",
+                        color: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      {loading ? "Uploading..." : "Save"}
+                    </button>
+                  </div>
+                </div>
               )}
+
+              {/* Image 블록 */}
               {mode === "image" && (
-                <button className="button primary" onClick={submitImage} disabled={loading}>
-                  {loading ? "업로드 중..." : "추가"}
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Image</div>
+                    <input 
+                      className="file" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={(e)=>setImg(e.target.files?.[0] ?? null)}
+                      style={{ fontSize: "13px" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "3px",
+                        backgroundColor: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitImage}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "3px",
+                        backgroundColor: loading ? "#ddd" : "#111",
+                        color: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      {loading ? "Uploading..." : "Save"}
+                    </button>
+                  </div>
+                </div>
               )}
+
+              {/* Patterned 블록 */}
               {mode === "patterned" && (
-                <button className="button primary" onClick={submitPatterned} disabled={loading}>
-                  {loading ? "업로드 중..." : "추가"}
-                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Images</div>
+                    <input 
+                      className="file" 
+                      type="file" 
+                      accept="image/*" 
+                      multiple 
+                      onChange={(e)=>setImgs(e.target.files)}
+                      style={{ fontSize: "13px" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button
+                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "1px solid #ddd",
+                        borderRadius: "3px",
+                        backgroundColor: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={submitPatterned}
+                      disabled={loading}
+                      style={{
+                        flex: 1,
+                        padding: "10px",
+                        border: "none",
+                        borderRadius: "3px",
+                        backgroundColor: loading ? "#ddd" : "#111",
+                        color: "white",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        fontSize: "14px"
+                      }}
+                    >
+                      {loading ? "Uploading..." : "Save"}
+                    </button>
+                  </div>
+                </div>
               )}
-            </>
-          )
-        }
-      >
-        {mode === "menu" && (
-          <div className="vstack gap-2">
-            <button className="button" onClick={() => setMode("text")}>Text</button>
-            <button className="button" onClick={() => setMode("text_image")}>Text with Image</button>
-            <button className="button" onClick={() => setMode("image")}>Image</button>
-            <button className="button" onClick={() => setMode("patterned")}>Patterned image</button>
-          </div>
-        )}
-
-        {mode === "text" && (
-          <div className="vstack gap-2">
-            <label className="grid gap-1">
-              텍스트
-              <textarea className="input" rows={6} value={text} onChange={(e)=>setText(e.target.value)} />
-            </label>
-            <small>가운데 정렬 컨테이너로 전체 폭(100%) 영역에 스택됩니다.</small>
-          </div>
-        )}
-
-        {mode === "text_image" && (
-          <div className="vstack gap-2">
-            <label className="grid gap-1">
-              텍스트
-              <textarea className="input" rows={6} value={text} onChange={(e)=>setText(e.target.value)} />
-            </label>
-            <label className="grid gap-1">
-              이미지 (필수)
-              <input className="file" type="file" accept="image/*" onChange={(e)=>setImg(e.target.files?.[0] ?? null)} />
-            </label>
-            <small>텍스트(좌) + 이미지(우) 50%/50%로 배치됩니다. 이미지 미선택 시 경고가 표시됩니다.</small>
-          </div>
-        )}
-
-        {mode === "image" && (
-          <div className="vstack gap-2">
-            <label className="grid gap-1">
-              이미지 (1장)
-              <input className="file" type="file" accept="image/*" onChange={(e)=>setImg(e.target.files?.[0] ?? null)} />
-            </label>
-            <small>가운데 정렬, 폭 60%로 배치됩니다.</small>
-          </div>
-        )}
-
-        {mode === "patterned" && (
-          <div className="vstack gap-2">
-            <label className="grid gap-1">
-              이미지 여러 장
-              <input className="file" type="file" accept="image/*" multiple onChange={(e)=>setImgs(e.target.files)} />
-            </label>
-            <small>여러 장을 바둑판식 그리드로 렌더링합니다.</small>
-          </div>
-        )}
-      </Modal>
+            </div>
+          </div>,
+          document.body
+        )
+      }
     </>
   );
 }

@@ -97,7 +97,11 @@ export default function ArticleBlocks({
                   </div>
                 )}
                 <div className="article-text-card">
-                  <div style={{ whiteSpace: "pre-wrap" }}>{b.text_content}</div>
+                  {/* HTML 콘텐츠 렌더링 */}
+                  <div 
+                    style={{ whiteSpace: "pre-wrap" }}
+                    dangerouslySetInnerHTML={{ __html: b.text_content || "" }}
+                  />
                 </div>
               </div>
             );
@@ -171,7 +175,11 @@ export default function ArticleBlocks({
                   }}
                 >
                   <div className="text-panel" style={{ display: "grid", placeItems: "center" }}>
-                    <div style={{ whiteSpace: "pre-wrap" }}>{b.text_content}</div>
+                    {/* HTML 콘텐츠 렌더링 */}
+                    <div 
+                      style={{ whiteSpace: "pre-wrap" }}
+                      dangerouslySetInnerHTML={{ __html: b.text_content || "" }}
+                    />
                   </div>
                   <div className="image-panel">
                     {b.image_url ? (
@@ -183,7 +191,7 @@ export default function ArticleBlocks({
                           height: "100%",
                           objectFit: "cover",
                           display: "block",
-                          border: "1px solid #eee",
+                          border: "0px solid #eee",
                           background: "#fff",
                         }}
                         loading="lazy"
