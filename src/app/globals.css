@@ -244,7 +244,7 @@ img { max-width: 100%; height: auto; display: block; }
   padding: var(--text-block-pad-y) var(--text-block-pad-x);
   border:0px solid #e5e7eb; background:#fff;
 }
-.image-panel{ border:1px solid #eee; background:#fff; }
+.image-panel{ border:0px solid #eee; background:#fff; }
 .image-panel img{ width:100%; height:auto; display:block; }
 
 /* 단일 이미지(중앙 60% / 반응형) */
@@ -358,7 +358,7 @@ body[data-route="idle"]     [data-page] { opacity: 1; }
 .articles-grid .article-card {
   width: calc(30% - 14px);
   min-width: 250px;
-  border-bottom: 1px solid #e5e5e5;
+  border-bottom: 0px solid #e5e5e5;
   padding-bottom: 24px;
 }
 
