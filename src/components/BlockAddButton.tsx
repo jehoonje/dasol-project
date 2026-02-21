@@ -27,6 +27,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
   const [currentText, setCurrentText] = useState("");
   const [currentColor, setCurrentColor] = useState("#333333");
   const [customColor, setCustomColor] = useState("#333333");
+  const [textAlign, setTextAlign] = useState<"left" | "center" | "right" | "justify">("center");
   
   const [img, setImg] = useState<File | null>(null);
   const [imgs, setImgs] = useState<FileList | null>(null);
@@ -46,6 +47,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
     setCurrentText("");
     setCurrentColor("#333333");
     setCustomColor("#333333");
+    setTextAlign("center");
     setImg(null);
     setImg2(null);
     setImgs(null);
@@ -100,9 +102,9 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
     return div.innerHTML;
   };
 
-  // 세그먼트들을 HTML로 변환 (띄어쓰기 유지)
-  const segmentsToHtml = (segs: ColoredSegment[]) => {
-    return segs.map(seg => {
+  // 세그먼트들을 HTML로 변환 (띄어쓰기 유지 + 텍스트 정렬)
+  const segmentsToHtml = (segs: ColoredSegment[], align: string = textAlign) => {
+    const content = segs.map(seg => {
       const lines = seg.text.split('\n');
       return lines.map(line => {
         if (line.trim() === '') return '<br>';
@@ -112,6 +114,8 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
         return `<span style="color: ${seg.color}">${withSpaces}</span>`;
       }).join('<br>');
     }).join('');
+    
+    return `<div style="text-align: ${align}">${content}</div>`;
   };
 
   const submitText = async () => {
@@ -348,6 +352,73 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
               {/* Text 블록 */}
               {mode === "text" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* 텍스트 정렬 */}
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Alignment</div>
+                    <div style={{ display: "flex", gap: "4px" }}>
+                      <button
+                        onClick={() => setTextAlign("left")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "left" ? "#111" : "#f5f5f5",
+                          color: textAlign === "left" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Left"
+                      >
+                        ←
+                      </button>
+                      <button
+                        onClick={() => setTextAlign("center")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "center" ? "#111" : "#f5f5f5",
+                          color: textAlign === "center" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Center"
+                      >
+                        ↔
+                      </button>
+                      <button
+                        onClick={() => setTextAlign("right")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "right" ? "#111" : "#f5f5f5",
+                          color: textAlign === "right" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Right"
+                      >
+                        →
+                      </button>
+                      <button
+                        onClick={() => setTextAlign("justify")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "justify" ? "#111" : "#f5f5f5",
+                          color: textAlign === "justify" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Justify"
+                      >
+                        ≡
+                      </button>
+                    </div>
+                  </div>
+
                   {/* 색상 선택 */}
                   <div>
                     <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Color</div>
@@ -542,6 +613,73 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
               {/* Text + Image 블록 */}
               {mode === "text_image" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {/* 텍스트 정렬 */}
+                  <div>
+                    <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Alignment</div>
+                    <div style={{ display: "flex", gap: "4px" }}>
+                      <button
+                        onClick={() => setTextAlign("left")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "left" ? "#111" : "#f5f5f5",
+                          color: textAlign === "left" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Left"
+                      >
+                        ←
+                      </button>
+                      <button
+                        onClick={() => setTextAlign("center")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "center" ? "#111" : "#f5f5f5",
+                          color: textAlign === "center" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Center"
+                      >
+                        ↔
+                      </button>
+                      <button
+                        onClick={() => setTextAlign("right")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "right" ? "#111" : "#f5f5f5",
+                          color: textAlign === "right" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Right"
+                      >
+                        →
+                      </button>
+                      <button
+                        onClick={() => setTextAlign("justify")}
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: textAlign === "justify" ? "#111" : "#f5f5f5",
+                          color: textAlign === "justify" ? "white" : "#666",
+                          border: "1px solid #ddd",
+                          borderRadius: "3px",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                        }}
+                        title="Justify"
+                      >
+                        ≡
+                      </button>
+                    </div>
+                  </div>
+
                   {/* 색상 선택 */}
                   <div>
                     <div style={{ fontSize: "13px", color: "#666", marginBottom: "8px" }}>Color</div>
