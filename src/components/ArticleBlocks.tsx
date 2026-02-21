@@ -97,7 +97,7 @@ export default function ArticleBlocks({
                   </div>
                 )}
                 <div className="article-text-card">
-                  {/* HTML 콘텐츠 렌더링 */}
+                  {/* HTML 콘텐츠 렌더링 - text-align 포함 */}
                   <div 
                     style={{ whiteSpace: "pre-wrap" }}
                     dangerouslySetInnerHTML={{ __html: b.text_content || "" }}
@@ -175,9 +175,9 @@ export default function ArticleBlocks({
                   }}
                 >
                   <div className="text-panel" style={{ display: "grid", placeItems: "center" }}>
-                    {/* HTML 콘텐츠 렌더링 */}
+                    {/* HTML 콘텐츠 렌더링 - text-align 포함 */}
                     <div 
-                      style={{ whiteSpace: "pre-wrap" }}
+                      style={{ whiteSpace: "pre-wrap", width: "100%" }}
                       dangerouslySetInnerHTML={{ __html: b.text_content || "" }}
                     />
                   </div>
@@ -191,7 +191,7 @@ export default function ArticleBlocks({
                           height: "100%",
                           objectFit: "cover",
                           display: "block",
-                          border: "0px solid #eee",
+                          border: "1px solid #eee",
                           background: "#fff",
                         }}
                         loading="lazy"
