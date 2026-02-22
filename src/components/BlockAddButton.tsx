@@ -7,7 +7,9 @@ import { supabase } from "../app/lib/supabaseClient";
 
 type Props = {
   articleId: string;
+  insertAfterSortOrder?: number; // 이 sort_order 뒤에 삽입
   onAdded?: () => void;
+  onClose?: () => void; // 모달 닫기 콜백
 };
 
 type Mode = "menu" | "text" | "text_image" | "image" | "patterned";
@@ -17,8 +19,8 @@ interface ColoredSegment {
   color: string;
 }
 
-export default function BlockAddButton({ articleId, onAdded }: Props) {
-  const [open, setOpen] = useState(false);
+export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdded, onClose }: Props) {
+  const [open, setOpen] = useState(insertAfterSortOrder !== undefined); // 삽입 모드면 자동 오픈
   const [mode, setMode] = useState<Mode>("menu");
   const [loading, setLoading] = useState(false);
 
@@ -55,6 +57,30 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
   };
 
   const getNextSort = async () => {
+    // 삽입 모드: 지정된 sort_order 뒤에 삽입
+    if (insertAfterSortOrder !== undefined) {
+      // 해당 위치 이후의 모든 블록들의 sort_order를 1씩 증가
+      const { data: blocksToUpdate } = await supabase
+        .from("pf_article_blocks")
+        .select("id, sort_order")
+        .eq("article_id", articleId)
+        .gt("sort_order", insertAfterSortOrder)
+        .order("sort_order", { ascending: true });
+
+      if (blocksToUpdate && blocksToUpdate.length > 0) {
+        // 역순으로 업데이트 (충돌 방지)
+        for (let i = blocksToUpdate.length - 1; i >= 0; i--) {
+          await supabase
+            .from("pf_article_blocks")
+            .update({ sort_order: blocksToUpdate[i].sort_order + 1 })
+            .eq("id", blocksToUpdate[i].id);
+        }
+      }
+
+      return insertAfterSortOrder + 1;
+    }
+
+    // 일반 모드: 맨 뒤에 추가
     const { data, error } = await supabase
       .from("pf_article_blocks")
       .select("sort_order")
@@ -242,11 +268,14 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
 
   return (
     <>
-      <button className="button primary" onClick={() => setOpen(true)} title="Add Post" style={{
-            marginTop: "80px"
-          }}>
-        ＋ Add Post
-      </button>
+      {/* 일반 모드일 때만 버튼 표시 */}
+      {insertAfterSortOrder === undefined && (
+        <button className="button primary" onClick={() => setOpen(true)} title="Add Post" style={{
+              marginTop: "80px"
+            }}>
+          ＋ Add Post
+        </button>
+      )}
 
       {/* Portal을 사용하여 body에 직접 렌더링 */}
       {open && typeof window !== 'undefined' && createPortal(
@@ -265,7 +294,12 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
             padding: "20px",
             overflow: "auto"
           }}
-          onClick={() => !loading && setOpen(false)}
+          onClick={() => {
+            if (!loading) {
+              setOpen(false);
+              onClose?.(); // 삽입 모드 종료
+            }
+          }}
         >
           <div
             style={{
@@ -576,7 +610,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
                   {/* 액션 버튼 */}
                   <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
                     <button
-                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      onClick={() => { setOpen(false); setTimeout(resetForm, 0); onClose?.(); }}
                       disabled={loading}
                       style={{
                         flex: 1,
@@ -849,7 +883,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
                   {/* 액션 버튼 */}
                   <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
                     <button
-                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      onClick={() => { setOpen(false); setTimeout(resetForm, 0); onClose?.(); }}
                       disabled={loading}
                       style={{
                         flex: 1,
@@ -899,7 +933,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
 
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
-                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      onClick={() => { setOpen(false); setTimeout(resetForm, 0); onClose?.(); }}
                       disabled={loading}
                       style={{
                         flex: 1,
@@ -950,7 +984,7 @@ export default function BlockAddButton({ articleId, onAdded }: Props) {
 
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
-                      onClick={() => (setOpen(false), setTimeout(resetForm, 0))}
+                      onClick={() => { setOpen(false); setTimeout(resetForm, 0); onClose?.(); }}
                       disabled={loading}
                       style={{
                         flex: 1,

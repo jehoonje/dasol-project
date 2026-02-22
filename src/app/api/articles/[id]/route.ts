@@ -94,14 +94,20 @@ export async function PATCH(
       return NextResponse.json({ error: "Article ID is required" }, { status: 400 });
     }
 
-    // updated_at 컬럼이 없으므로 제거
+    const updateData: any = {
+      title: body.title,
+      category_id: body.category_id,
+      updated_at: new Date().toISOString(),
+    };
+
+    // cover_image_url이 제공되면 업데이트
+    if (body.cover_image_url !== undefined) {
+      updateData.cover_image_url = body.cover_image_url;
+    }
+
     const { error } = await supabaseAdmin
       .from("pf_articles")
-      .update({
-        title: body.title,
-        category_id: body.category_id,
-        updated_at: new Date().toISOString(), // 다시 추가
-      })
+      .update(updateData)
       .eq("id", id);
 
     if (error) {
