@@ -4,6 +4,7 @@ import Modal from "./Modal";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../app/lib/supabaseClient";
+import imageCompression from "browser-image-compression"; // 👈 압축 라이브러리 추가
 
 export default function ArticleCreateButton({
   categoryId,
@@ -27,18 +28,36 @@ export default function ArticleCreateButton({
     try {
       const articleId = crypto.randomUUID();
 
-      // 1. 대표 이미지 업로드 (/api/upload 사용)
+      // ✅ 1. 대표 이미지 압축 로직 추가
+      let fileToUpload = file;
+      try {
+        const options = {
+          maxSizeMB: 1, // 1MB 제한
+          maxWidthOrHeight: 1920, // 최대 해상도
+          useWebWorker: true,
+        };
+        fileToUpload = await imageCompression(file, options);
+      } catch (error) {
+        console.error("이미지 압축 에러 (원본 파일로 업로드 진행):", error);
+      }
+
+      // 파일명 난수화 (덮어쓰기 방지)
+      const safeFileName = fileToUpload.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+      const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+      const uploadPath = `articles/${articleId}/cover_${Date.now()}_${uniqueSuffix}_${safeFileName}`;
+
+      // 2. 대표 이미지 업로드 (/api/upload 사용)
       const fd = new FormData();
       fd.append("bucket", "pf_article_images");
-      fd.append("file", file);
-      fd.append("path", `articles/${articleId}/cover_${Date.now()}_${file.name}`);
+      fd.append("file", fileToUpload); // 원본 대신 압축된 파일 사용
+      fd.append("path", uploadPath);
       
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error ?? "이미지 업로드에 실패했습니다.");
       const cover = json.publicUrl as string;
 
-      // 2. 글 생성 (category_id 포함)
+      // 3. 글 생성 (category_id 포함)
       const { data, error: artErr } = await supabase
         .from("pf_articles")
         .insert({

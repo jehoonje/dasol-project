@@ -105,12 +105,11 @@ export default function AboutPage() {
                 src={aboutData.image_url}
                 alt="About"
                 style={{
-                  width: "60%",
+                  width: "70%",
                   margin: "0 auto",  
                   maxHeight: "400px",
                   objectFit: "cover",
                   borderRadius: "4px",
-                  border: "1px solid #eee"
                 }}
               />
             </div>
