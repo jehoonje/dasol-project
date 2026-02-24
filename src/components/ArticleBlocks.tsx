@@ -51,17 +51,7 @@ export default function ArticleBlocks({
             }}>
               <button
                 onClick={() => setEditingBlock(b)}
-                style={{
-                  padding: "4px 10px",
-                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s",
-                }}
+                style={editButtonStyle}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
                 }}
@@ -73,17 +63,7 @@ export default function ArticleBlocks({
               </button>
               <button
                 onClick={() => handleDelete(b.id)}
-                style={{
-                  padding: "4px 10px",
-                  backgroundColor: "rgba(220, 38, 38, 0.7)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s",
-                }}
+                style={deleteButtonStyle}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
                 }}
@@ -119,17 +99,7 @@ export default function ArticleBlocks({
             }}>
               <button
                 onClick={() => setEditingBlock(b)}
-                style={{
-                  padding: "4px 10px",
-                  backgroundColor: "rgba(0, 0, 0, 0.7)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s",
-                }}
+                style={editButtonStyle}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
                 }}
@@ -141,17 +111,7 @@ export default function ArticleBlocks({
               </button>
               <button
                 onClick={() => handleDelete(b.id)}
-                style={{
-                  padding: "4px 10px",
-                  backgroundColor: "rgba(220, 38, 38, 0.7)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s",
-                }}
+                style={deleteButtonStyle}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
                 }}
@@ -215,18 +175,20 @@ export default function ArticleBlocks({
               zIndex: 10 
             }}>
               <button
-                onClick={() => handleDelete(b.id)}
-                style={{
-                  padding: "4px 10px",
-                  backgroundColor: "rgba(220, 38, 38, 0.7)",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  transition: "background-color 0.2s",
+                onClick={() => setEditingBlock(b)}
+                style={editButtonStyle}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
                 }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+                }}
+              >
+                수정
+              </button>
+              <button
+                onClick={() => handleDelete(b.id)}
+                style={deleteButtonStyle}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
                 }}
@@ -256,6 +218,7 @@ export default function ArticleBlocks({
     const images = Array.isArray(b.images)
       ? b.images.map((u, i) => ({ id: `${b.id}-${i}`, image_url: u, sort_order: i }))
       : [];
+      
     return (
       <div key={b.id} className="block-center patterned-block" style={{ position: "relative" }}>
         {isOwner && (
@@ -268,18 +231,20 @@ export default function ArticleBlocks({
             zIndex: 10 
           }}>
             <button
-              onClick={() => handleDelete(b.id)}
-              style={{
-                padding: "4px 10px",
-                backgroundColor: "rgba(220, 38, 38, 0.7)",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "12px",
-                fontWeight: "500",
-                transition: "background-color 0.2s",
+              onClick={() => setEditingBlock(b)}
+              style={editButtonStyle}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
               }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+              }}
+            >
+              수정
+            </button>
+            <button
+              onClick={() => handleDelete(b.id)}
+              style={deleteButtonStyle}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = "rgba(220, 38, 38, 0.9)";
               }}
@@ -373,3 +338,28 @@ export default function ArticleBlocks({
     </>
   );
 }
+
+// 공통 버튼 스타일 정의
+const editButtonStyle: React.CSSProperties = {
+  padding: "4px 10px",
+  backgroundColor: "rgba(0, 0, 0, 0.7)",
+  color: "white",
+  border: "none",
+  borderRadius: "4px",
+  cursor: "pointer",
+  fontSize: "12px",
+  fontWeight: "500",
+  transition: "background-color 0.2s",
+};
+
+const deleteButtonStyle: React.CSSProperties = {
+  padding: "4px 10px",
+  backgroundColor: "rgba(220, 38, 38, 0.7)",
+  color: "white",
+  border: "none",
+  borderRadius: "4px",
+  cursor: "pointer",
+  fontSize: "12px",
+  fontWeight: "500",
+  transition: "background-color 0.2s",
+};
