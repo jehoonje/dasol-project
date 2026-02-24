@@ -456,3 +456,20 @@ body[data-route="entering"] [data-page] {
 [data-page] > * {
   transition: inherit;
 }
+
+/* globals.css에 추가 */
+
+/* 이미지 로딩 애니메이션 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 이미지 최적화 */
+img {
+  content-visibility: auto;
+}

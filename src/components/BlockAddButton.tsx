@@ -4,12 +4,13 @@ import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import Modal from "./Modal";
 import { supabase } from "../app/lib/supabaseClient";
+import imageCompression from "browser-image-compression"; // 👈 압축 라이브러리 추가
 
 type Props = {
   articleId: string;
-  insertAfterSortOrder?: number; // 이 sort_order 뒤에 삽입
+  insertAfterSortOrder?: number;
   onAdded?: () => void;
-  onClose?: () => void; // 모달 닫기 콜백
+  onClose?: () => void;
 };
 
 type Mode = "menu" | "text" | "text_image" | "image" | "patterned";
@@ -20,7 +21,7 @@ interface ColoredSegment {
 }
 
 export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdded, onClose }: Props) {
-  const [open, setOpen] = useState(insertAfterSortOrder !== undefined); // 삽입 모드면 자동 오픈
+  const [open, setOpen] = useState(insertAfterSortOrder !== undefined);
   const [mode, setMode] = useState<Mode>("menu");
   const [loading, setLoading] = useState(false);
 
@@ -42,8 +43,6 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
     "#718096", "#FFFFFF"
   ];
 
-
-
   const resetForm = () => {
     setSegments([]);
     setCurrentText("");
@@ -57,9 +56,7 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
   };
 
   const getNextSort = async () => {
-    // 삽입 모드: 지정된 sort_order 뒤에 삽입
     if (insertAfterSortOrder !== undefined) {
-      // 해당 위치 이후의 모든 블록들의 sort_order를 1씩 증가
       const { data: blocksToUpdate } = await supabase
         .from("pf_article_blocks")
         .select("id, sort_order")
@@ -68,7 +65,6 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
         .order("sort_order", { ascending: true });
 
       if (blocksToUpdate && blocksToUpdate.length > 0) {
-        // 역순으로 업데이트 (충돌 방지)
         for (let i = blocksToUpdate.length - 1; i >= 0; i--) {
           await supabase
             .from("pf_article_blocks")
@@ -76,11 +72,9 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
             .eq("id", blocksToUpdate[i].id);
         }
       }
-
       return insertAfterSortOrder + 1;
     }
 
-    // 일반 모드: 맨 뒤에 추가
     const { data, error } = await supabase
       .from("pf_article_blocks")
       .select("sort_order")
@@ -91,13 +85,30 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
     return 0;
   };
 
+  // ✅ 핵심: 업로드 전 이미지 압축 로직 추가
   const uploadOne = async (bucket: string, file: File, pathPrefix: string) => {
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const safePath = `${pathPrefix}/${Date.now()}_${safeFileName}`;
+    let fileToUpload = file;
+
+    // 1. 이미지 압축 (최대 1MB, 최대 해상도 1920px)
+    try {
+      const options = {
+        maxSizeMB: 1, 
+        maxWidthOrHeight: 1920, 
+        useWebWorker: true,
+      };
+      fileToUpload = await imageCompression(file, options);
+    } catch (error) {
+      console.error("이미지 압축 에러 (원본 파일로 업로드 진행):", error);
+    }
+
+    // 2. 파일명 난수화 (동시 업로드 시 덮어쓰기 방지)
+    const safeFileName = fileToUpload.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+    const safePath = `${pathPrefix}/${Date.now()}_${uniqueSuffix}_${safeFileName}`;
   
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from(bucket)
-      .upload(safePath, file);
+      .upload(safePath, fileToUpload);
   
     if (error) throw error;
   
@@ -108,7 +119,6 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
     return publicUrl;
   };
 
-  // 현재 입력된 텍스트를 세그먼트에 추가
   const addSegment = () => {
     if (currentText.trim()) {
       setSegments([...segments, { text: currentText, color: currentColor }]);
@@ -116,25 +126,21 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
     }
   };
 
-  // 세그먼트 삭제
   const removeSegment = (index: number) => {
     setSegments(segments.filter((_, i) => i !== index));
   };
 
-  // HTML 엔티티 이스케이프 (XSS 방지)
   const escapeHtml = (text: string) => {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   };
 
-  // 세그먼트들을 HTML로 변환 (띄어쓰기 유지 + 텍스트 정렬)
   const segmentsToHtml = (segs: ColoredSegment[], align: string = textAlign) => {
     const content = segs.map(seg => {
       const lines = seg.text.split('\n');
       return lines.map(line => {
         if (line.trim() === '') return '<br>';
-        // 연속된 공백을 &nbsp;로 변환하여 띄어쓰기 유지
         const escaped = escapeHtml(line);
         const withSpaces = escaped.replace(/ {2,}/g, (match) => '&nbsp;'.repeat(match.length));
         return `<span style="color: ${seg.color}">${withSpaces}</span>`;
@@ -189,7 +195,7 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
     try {
       const sort = await getNextSort();
       const imageFile = img ?? img2!;
-      const url = await uploadOne("pf_article_images", imageFile, `blocks/${articleId}/${Date.now()}_${imageFile.name}`);
+      const url = await uploadOne("pf_article_images", imageFile, `blocks/${articleId}`);
 
       const htmlContent = segmentsToHtml(finalSegments);
 
@@ -217,7 +223,7 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
     setLoading(true);
     try {
       const sort = await getNextSort();
-      const url = await uploadOne("pf_article_images", img, `blocks/${articleId}/${Date.now()}_${img.name}`);
+      const url = await uploadOne("pf_article_images", img, `blocks/${articleId}`);
       const { error } = await supabase.from("pf_article_blocks").insert({
         article_id: articleId,
         block_type: "image",
@@ -242,7 +248,7 @@ export default function BlockAddButton({ articleId, insertAfterSortOrder, onAdde
       const sort = await getNextSort();
       const files = Array.from(imgs);
       
-      const uploadPromises = files.map((f, i) => 
+      const uploadPromises = files.map((f) => 
         uploadOne("pf_article_images", f, `blocks/${articleId}`)
       );
       

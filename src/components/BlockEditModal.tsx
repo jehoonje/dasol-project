@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import type { ArticleBlock } from "@/app/types";
 import { supabase } from "@/app/lib/supabaseClient";
+import imageCompression from "browser-image-compression"; // 👈 압축 라이브러리 추가
 
 type Props = {
   block: ArticleBlock;
@@ -135,14 +136,30 @@ export default function BlockEditModal({ block, onClose, onUpdated }: Props) {
     }
   };
 
-  // 이미지 업로드
+  // ✅ 이미지 업로드 (압축 로직 추가됨)
   const uploadImage = async (file: File): Promise<string> => {
-    const safeFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-    const filePath = `blocks/${block.article_id}/${Date.now()}_${safeFileName}`;
+    let fileToUpload = file;
+
+    // 1. 이미지 압축 (최대 1MB, 최대 해상도 1920px)
+    try {
+      const options = {
+        maxSizeMB: 1, 
+        maxWidthOrHeight: 1920, 
+        useWebWorker: true,
+      };
+      fileToUpload = await imageCompression(file, options);
+    } catch (error) {
+      console.error("이미지 압축 에러 (원본 파일로 업로드 진행):", error);
+    }
+
+    // 2. 파일명 난수화 및 경로 설정
+    const safeFileName = fileToUpload.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const uniqueSuffix = Math.random().toString(36).substring(2, 8);
+    const filePath = `blocks/${block.article_id}/${Date.now()}_${uniqueSuffix}_${safeFileName}`;
     
     const { data, error } = await supabase.storage
       .from("pf_article_images")
-      .upload(filePath, file);
+      .upload(filePath, fileToUpload);
     
     if (error) throw error;
     
