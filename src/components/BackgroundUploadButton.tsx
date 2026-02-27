@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Modal from "./Modal";
 import { useUIStore } from "../app/store/useUIStore";
+import imageCompression from "browser-image-compression";
 
 export default function BackgroundUploadButton() {
   const [open, setOpen] = useState(false);
@@ -13,11 +14,34 @@ export default function BackgroundUploadButton() {
   const handleSubmit = async () => {
     if (!file) return alert("이미지를 선택해 주세요.");
     setLoading(true);
+    
     try {
+      console.log("[Upload] Starting compression...");
+      
+      // 이미지 압축 옵션 설정
+      const options = {
+        maxSizeMB: 1, // 최대 용량 1MB
+        maxWidthOrHeight: 1920, // 배경화면용이므로 최대 FHD 해상도로 제한
+        useWebWorker: true,
+      };
+
+      // 이미지 압축 실행
+      const compressedBlob = await imageCompression(file, options);
+      
+      // Blob을 File 객체로 다시 변환 (서버 전송용)
+      const compressedFile = new File([compressedBlob], file.name, {
+        type: compressedBlob.type,
+        lastModified: Date.now(),
+      });
+
+      console.log(
+        `[Upload] 압축 완료: ${(file.size / 1024 / 1024).toFixed(2)}MB -> ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`
+      );
+
       const fd = new FormData();
       fd.append("bucket", "pf_backgrounds");
-      fd.append("file", file);
-      fd.append("path", `home/${Date.now()}_${file.name}`);
+      fd.append("file", compressedFile); // 원본 file 대신 압축된 compressedFile 전송
+      fd.append("path", `home/${Date.now()}_${compressedFile.name}`);
 
       console.log("[Upload] Starting upload...");
       const res = await fetch("/api/upload", { method: "POST", body: fd });
