@@ -88,7 +88,7 @@ export default function ArticleBlocks({
     if (b.block_type === "text_image") {
       return (
         <div key={b.id} className="block-center text-image-block" style={{ position: "relative" }}>
-          {isOwner && (
+            {isOwner && (
             <div style={{ 
               position: "absolute", 
               top: "12px", 

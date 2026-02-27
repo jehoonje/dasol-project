@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 
 export default function ContactPage() {
-  const isOwner = true; // 실제 구현 시 인증 훅 사용
+  // TODO: 실제 프로젝트의 인증 상태를 연결해 관리자 여부를 판단하세요.
+  const isOwner = true; 
 
-  // 연락처 정보 상태
+  // 연락처 정보 상태 (수정 모드용)
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [contactData, setContactData] = useState({
@@ -19,13 +20,13 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
 
-  // 초기 연락처 데이터 불러오기
+  // 초기 연락처 데이터 불러오기 (DB 연동)
   useEffect(() => {
     async function fetchContact() {
       try {
         const res = await fetch("/api/contact");
         const data = await res.json();
-        if (data) {
+        if (data && !data.error) {
           setContactData({
             id: data.id,
             email: data.email,
@@ -41,7 +42,7 @@ export default function ContactPage() {
     fetchContact();
   }, []);
 
-  // 연락처 저장 처리
+  // 연락처 저장 처리 (수정 모드 완료 시)
   const handleSaveContact = async () => {
     try {
       const res = await fetch("/api/contact", {
@@ -100,17 +101,36 @@ export default function ContactPage() {
     }
   };
 
+  // 로딩 중일 때 중앙 스피너 표시
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <svg width="50" height="50" viewBox="0 0 50 50">
+          <circle 
+            cx="25" cy="25" r="20" 
+            fill="none" stroke="#0070f3" strokeWidth="4" 
+            strokeDasharray="31.4 31.4" strokeDashoffset="0"
+          >
+            <animateTransform 
+              attributeName="transform" type="rotate" 
+              from="0 25 25" to="360 25 25" dur="1s" repeatCount="indefinite" 
+            />
+          </circle>
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div className="container-90" style={{ paddingTop: "80px" }}>
       <section className="page-section">
         
         {/* 헤더 및 수정 버튼 영역 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          
+          <h1>Contact</h1>
           {isOwner && !isEditing && (
             <button 
               onClick={() => setIsEditing(true)}
-              // ⭐️ 수정 버튼 눈에 띄게 스타일링
               style={{ 
                 padding: "8px 20px", cursor: "pointer", backgroundColor: "#000", 
                 color: "#fff", border: "none", borderRadius: "8px", fontWeight: "bold" 
@@ -121,13 +141,13 @@ export default function ContactPage() {
           )}
         </div>
 
+        {/* 연락처 표시 영역 */}
         <div className="card vstack gap-2" style={{ marginTop: "16px" }}>
           <p className="muted">
             문의는 아래 연락처로 보내 주세요. 간단한 메모를 남기실 수도 있습니다.
           </p>
 
           {isEditing ? (
-            // 편집 모드 UI
             <div className="vstack gap-2" style={{ marginTop: "16px" }}>
               <label className="vstack gap-2">
                 <strong>Email</strong>
@@ -152,7 +172,6 @@ export default function ContactPage() {
               <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
                 <button 
                   onClick={handleSaveContact} 
-                  // ⭐️ 저장 버튼 강조
                   style={{ 
                     cursor: "pointer", backgroundColor: "#0070f3", color: "white", 
                     padding: "10px 24px", border: "none", borderRadius: "8px", fontWeight: "bold" 
@@ -162,7 +181,6 @@ export default function ContactPage() {
                 </button>
                 <button 
                   onClick={() => setIsEditing(false)} 
-                  // ⭐️ 취소 버튼 스타일링
                   style={{ 
                     cursor: "pointer", backgroundColor: "transparent", color: "#666", 
                     padding: "10px 24px", border: "1px solid #ccc", borderRadius: "8px", fontWeight: "bold" 
@@ -173,7 +191,6 @@ export default function ContactPage() {
               </div>
             </div>
           ) : (
-            // 보기 모드 UI
             <>
               <div>
                 <div><strong>Email</strong></div>
@@ -190,7 +207,7 @@ export default function ContactPage() {
           )}
         </div>
 
-        {/* ⭐️ 이메일 발송 폼 (실제 작동) */}
+        {/* 이메일 발송 폼 영역 */}
         <div className="card" style={{ marginTop: 24 }}>
           <form className="vstack gap-2" onSubmit={handleSendEmail}>
             <label className="vstack gap-2">
