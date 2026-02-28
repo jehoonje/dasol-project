@@ -306,6 +306,13 @@ export default function NavigationDrawer() {
                 <VTLink
                   key={item.label}
                   href={item.href}
+                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                    if (pathname === item.href) {
+                      e.preventDefault();
+                    }
+                    setIsOpen(false);
+                    setShowCategories(false);
+                  }}
                   style={{
                     width: "100%",
                     padding: "16px 20px",
