@@ -98,7 +98,7 @@ export default function Header() {
         newPositions.push(newPos);
       });
 
-      console.log('생성된 위치:', newPositions);
+      //console.log('생성된 위치:', newPositions);
       setPositions(newPositions);
     };
 

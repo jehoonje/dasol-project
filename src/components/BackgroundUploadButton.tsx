@@ -43,13 +43,13 @@ export default function BackgroundUploadButton() {
       fd.append("file", compressedFile); // 원본 file 대신 압축된 compressedFile 전송
       fd.append("path", `home/${Date.now()}_${compressedFile.name}`);
 
-      console.log("[Upload] Starting upload...");
+      //console.log("[Upload] Starting upload...");
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       
       // 응답 텍스트 먼저 확인
       const text = await res.text();
-      console.log("[Upload] Response status:", res.status);
-      console.log("[Upload] Response text:", text);
+      //console.log("[Upload] Response status:", res.status);
+      //console.log("[Upload] Response text:", text);
 
       let json;
       try {
@@ -76,7 +76,7 @@ export default function BackgroundUploadButton() {
       // localStorage에 저장
       try { 
         localStorage.setItem("bgUrl", url);
-        console.log("[Upload] Saved to localStorage");
+        //console.log("[Upload] Saved to localStorage");
       } catch (e) {
         console.error("[Upload] localStorage error:", e);
       }

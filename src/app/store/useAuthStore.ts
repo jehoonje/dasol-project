@@ -18,7 +18,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   signIn: async (email: string, password: string) => {
     try {
-      console.log("로그인 시도:", email);
+      //console.log("로그인 시도:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -33,7 +33,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         throw error;
       }
 
-      console.log("로그인 성공:", data.user?.email);
+      //console.log("로그인 성공:", data.user?.email);
       // 로그인만 성공하면 owner 권한 부여
       set({ user: data.user, isOwner: true });
     } catch (error) {

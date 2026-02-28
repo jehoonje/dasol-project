@@ -59,9 +59,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Block ID is required" }, { status: 400 });
     }
 
-    console.log('=== Block Update API ===');
-    console.log('Block ID:', id);
-    console.log('Request body:', JSON.stringify(body, null, 2));
+    //console.log('=== Block Update API ===');
+    //console.log('Block ID:', id);
+    //console.log('Request body:', JSON.stringify(body, null, 2));
 
     // 업데이트할 데이터 준비
     const updateData: any = {
@@ -88,7 +88,7 @@ export async function PATCH(
       updateData.images = body.images;
     }
 
-    console.log('Update data:', JSON.stringify(updateData, null, 2));
+    //console.log('Update data:', JSON.stringify(updateData, null, 2));
 
     const { data, error } = await supabaseAdmin
       .from("pf_article_blocks")
@@ -105,7 +105,7 @@ export async function PATCH(
       );
     }
 
-    console.log('Updated block:', data);
+    //console.log('Updated block:', data);
 
     return NextResponse.json({ success: true, data });
   } catch (error: any) {
