@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useAuthStore } from "@/app/store/useAuthStore"; // 💡 Zustand 스토어 임포트 추가
 
 export default function ContactPage() {
-  // TODO: 실제 프로젝트의 인증 상태를 연결해 관리자 여부를 판단하세요.
-  const isOwner = true; 
+  // 💡 하드코딩된 true를 지우고, 실제 로그인(owner) 상태를 가져옵니다.
+  const isOwner = useAuthStore((state) => state.isOwner); 
 
   // 연락처 정보 상태 (수정 모드용)
   const [isEditing, setIsEditing] = useState(false);
@@ -108,7 +109,7 @@ export default function ContactPage() {
         <svg width="50" height="50" viewBox="0 0 50 50">
           <circle 
             cx="25" cy="25" r="20" 
-            fill="none" stroke="#0070f3" strokeWidth="4" 
+            fill="none" stroke="#dadada" strokeWidth="4" 
             strokeDasharray="31.4 31.4" strokeDashoffset="0"
           >
             <animateTransform 
@@ -128,6 +129,7 @@ export default function ContactPage() {
         {/* 헤더 및 수정 버튼 영역 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h1>Contact</h1>
+          {/* 💡 isOwner가 true일 때만 수정 버튼이 렌더링됩니다. */}
           {isOwner && !isEditing && (
             <button 
               onClick={() => setIsEditing(true)}
