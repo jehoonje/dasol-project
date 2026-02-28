@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ImageModal from "./ImageModal";
+import Image from "next/image";
 
 type ArticleImage = { id: string; image_url: string; sort_order: number };
 
@@ -95,12 +96,14 @@ export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
               }}
               aria-label="확대 보기"
             >
-              <img
+              <Image
                 src={img.image_url}
                 alt=""
+                width={800}    // 필수 속성 추가
+                height={800}   // 필수 속성 추가
+                sizes="(max-width: 768px) 50vw, 33vw"
                 className="masonry-img"
                 style={{ width: "100%", height: "auto", display: "block" }}
-                loading="lazy"
                 onLoad={recalcSpans}
               />
             </button>

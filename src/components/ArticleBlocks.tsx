@@ -6,6 +6,7 @@ import type { ArticleBlock } from "../app/types";
 import GalleryGrid from "./GalleryGrid";
 import BlockEditModal from "./BlockEditModal";
 import BlockAddButton from "./BlockAddButton";
+import Image from "next/image";
 import { useAuthStore } from "@/app/store/useAuthStore";
 
 export default function ArticleBlocks({
@@ -138,20 +139,19 @@ export default function ArticleBlocks({
                 dangerouslySetInnerHTML={{ __html: b.text_content || "" }}
               />
             </div>
-            <div className="image-panel">
+            <div className="image-panel" style={{ position: "relative", minHeight: "250px" }}>
               {b.image_url ? (
-                <img
+                <Image
                   src={b.image_url}
                   alt=""
+                  fill
+                  sizes="(max-width: 768px) 50vw, 50vw"
                   style={{
-                    width: "100%",
-                    height: "100%",
                     objectFit: "cover",
                     display: "block",
                     border: "1px solid #eee",
                     background: "#fff",
                   }}
-                  loading="lazy"
                 />
               ) : (
                 <div style={{ padding: 16, textAlign: "center" }}>이미지 없음</div>
@@ -164,7 +164,7 @@ export default function ArticleBlocks({
 
     if (b.block_type === "image") {
       return (
-        <div key={b.id} className="block-center single-image-block" style={{ position: "relative" }}>
+        <div key={b.id} className="block-center single-image-block" style={{ position: "relative"}}>
           {isOwner && (
             <div style={{ 
               position: "absolute", 
@@ -201,10 +201,13 @@ export default function ArticleBlocks({
             </div>
           )}
           <div className="single-image-wrap">
-            {b.image_url ? (
-              <img
+          {b.image_url ? (
+              <Image
                 src={b.image_url}
                 alt=""
+                width={1200}
+                height={800}
+                sizes="(max-width: 1200px) 100vw, 1200px"
                 style={{ width: "100%", height: "auto", display: "block", border: "1px solid #eee", background: "#fff" }}
               />
             ) : (

@@ -56,10 +56,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { id, content, image_url } = body;
 
-    console.log('=== About Update/Create ===');
-    console.log('ID:', id);
-    console.log('Content length:', content?.length);
-    console.log('Image URL:', image_url?.substring(0, 50));
+    //console.log('=== About Update/Create ===');
+    //console.log('ID:', id);
+    //console.log('Content length:', content?.length);
+    //console.log('Image URL:', image_url?.substring(0, 50));
 
     // 기존 레코드가 있으면 업데이트, 없으면 생성
     if (id) {
