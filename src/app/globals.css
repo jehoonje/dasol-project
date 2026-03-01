@@ -11,7 +11,13 @@ body {
   "Segoe UI", "Roboto", sans-serif;
 }
 a { text-decoration: none; color: inherit; }
-img { max-width: 100%; height: auto; display: block; }
+
+/* ✅ img 규칙 단일 통합 — 중복 제거, content-visibility/image-rendering 제거 */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 
 /* 유틸 클래스들 (Tailwind와 병행 사용) */
 .container-90 { width: 90%; margin: 0 auto; }
@@ -53,7 +59,7 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* 모바일 스타일 */
 @media (max-width: 768px) {
-  .site-title { font-size: 24px;  }
+  .site-title { font-size: 24px; }
   
   .nav {
     flex-direction: column;
@@ -100,9 +106,8 @@ img { max-width: 100%; height: auto; display: block; }
 }
 
 .site-title {
-  font-weight: 600;         /* 900 → 600 정도로 낮춰서 미니멀하게 */
-  letter-spacing: 0.08em;   /* 자간 살짝 늘리기 */
-  
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
 .nav,
@@ -135,8 +140,8 @@ img { max-width: 100%; height: auto; display: block; }
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;  /* 화면 너비 전체 */
-  height: 100vh; /* 화면 높이 전체 */
+  width: 100vw;
+  height: 100vh;
   background: rgba(0,0,0,0.4);
   display: flex;
   align-items: center;
@@ -153,17 +158,17 @@ img { max-width: 100%; height: auto; display: block; }
 
 /* ===== View Transitions: 초고속 전환 (0.12s) ===== */
 
-/* 메인 컨테이너만 전환 대상 (헤더는 고정) */
+/* ✅ 페이지 전환은 View Transition API 단일 방식으로 통합
+   수동 data-route 방식(rt-fade-in/out)은 제거 */
 .page { view-transition-name: page; }
 
-/* GPU 가속을 위한 키프레임 최적화 */
 @keyframes vt-fade-out {
   to {
     opacity: 0;
     transform: scale(0.98);
   }
 }
-@keyframes vt-fade-in  {
+@keyframes vt-fade-in {
   from {
     opacity: 0;
     transform: scale(0.98);
@@ -174,13 +179,11 @@ img { max-width: 100%; height: auto; display: block; }
   }
 }
 
-/* 이전 화면: 0.12초 페이드아웃 */
 :root::view-transition-old(page) {
   animation: vt-fade-out 0.12s cubic-bezier(0.4, 0, 1, 1) both;
   will-change: opacity, transform;
 }
 
-/* 새 화면: 이전 화면이 끝난 뒤 0.12초 페이드인 */
 :root::view-transition-new(page) {
   animation: vt-fade-in 0.12s cubic-bezier(0, 0, 0.2, 1) 0.12s both;
   will-change: opacity, transform;
@@ -189,12 +192,8 @@ img { max-width: 100%; height: auto; display: block; }
 /* 헤더는 전환에서 제외 */
 .header { view-transition-name: none; }
 
-/* 세로 스택 전용 유틸 */
-.vstack { display: flex; flex-direction: column; gap: 24px; }
-.vstack.gap-2 { gap: 8px; }
-
 /* ===== Responsive layout tokens ===== */
-:root{
+:root {
   --stack-gap: 40px;
   --container-max: 980px;
   --text-block-pad-y: clamp(24px, 6vw, 64px);
@@ -202,77 +201,73 @@ img { max-width: 100%; height: auto; display: block; }
   --grid-gap: clamp(12px, 2.8vw, 20px);
 }
 
-/* 세로 스택 전용 유틸 (갤러리 .grid 와 분리) */
-.vstack { display:flex; flex-direction:column; gap: var(--stack-gap); }
+/* 세로 스택 전용 유틸 */
+.vstack { display: flex; flex-direction: column; gap: var(--stack-gap); }
 .vstack.gap-2 { gap: 8px; }
 
-/* 컨테이너 60% (반응형) */
-.container-90 { width:90%;  margin:0 auto; }
-@media (max-width: 1024px){ .container-90 { width:80%; } }
-@media (max-width: 640px){  .container-90 { width:92%; } }
+/* 컨테이너 반응형 */
+.container-90 { width: 90%; margin: 0 auto; }
+@media (max-width: 1024px) { .container-90 { width: 80%; } }
+@media (max-width: 640px)  { .container-90 { width: 92%; } }
 
 /* ===== Article blocks ===== */
 
-/* 공통 중앙 래퍼(카드들을 중앙에 모음) */
-.block-center { display:flex; justify-content:center; }
+.block-center { display: flex; justify-content: center; }
 
-/* 텍스트 전용 블록: 가운데 정렬 + 넉넉한 상하 여백 */
 .article-text-block { margin-block: var(--text-block-pad-y); }
 .article-text-card {
-  width:100%;
+  width: 100%;
   max-width: var(--container-max);
-  text-align:center;
+  text-align: center;
   padding: var(--text-block-pad-y) var(--text-block-pad-x);
   border: 0px solid #e5e7eb;
-  background:#fff;
+  background: #fff;
   line-height: 1.75;
 }
 
-/* 텍스트 + 이미지 (양쪽 50% / 모바일 1열) */
-.text-image-block  { margin-block: var(--text-block-pad-y); }
+.text-image-block { margin-block: var(--text-block-pad-y); }
 .text-image-grid {
-  width:100%; max-width: var(--container-max);
-  display:grid; gap: var(--grid-gap);
+  width: 100%;
+  max-width: var(--container-max);
+  display: grid;
+  gap: var(--grid-gap);
   grid-template-columns: 1fr;
   align-items: stretch;
 }
-@media (min-width: 768px){
+@media (min-width: 768px) {
   .text-image-grid { grid-template-columns: 1fr 1fr; }
 }
-.text-panel{
-  display:flex; align-items:center; justify-content:center; text-align:center;
+.text-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: var(--text-block-pad-y) var(--text-block-pad-x);
-  border:0px solid #e5e7eb; background:#fff;
+  border: 0px solid #e5e7eb;
+  background: #fff;
 }
-.image-panel{ border:0px solid #eee; background:#fff; }
-.image-panel img{ width:100%; height:auto; display:block; }
+.image-panel { border: 0px solid #eee; background: #fff; }
+.image-panel img { width: 100%; height: auto; display: block; }
 
-/* 단일 이미지(중앙 60% / 반응형) */
 .single-image-block { margin-block: var(--text-block-pad-y); }
-.single-image-wrap { width:60%; }
-@media (max-width:1024px){ .single-image-wrap{ width:80%; } }
-@media (max-width:640px){  .single-image-wrap{ width:100%; } }
+.single-image-wrap { width: 60%; }
+@media (max-width: 1024px) { .single-image-wrap { width: 80%; } }
+@media (max-width: 640px)  { .single-image-wrap { width: 100%; } }
 
-/* 패턴드(바둑판) 블록: 내부 갤러리는 GalleryGrid가 처리, 여백만 */
 .patterned-block { margin-block: var(--text-block-pad-y); }
 
-/* 갤러리 기본 그리드 간격도 반응형으로 살짝 업그레이드 */
-.grid { display:grid; gap: var(--grid-gap); grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); }
+.grid { display: grid; gap: var(--grid-gap); grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 
-/* 페이지 섹션 공통 여백 */
 .page-section { margin: clamp(24px, 6vw, 64px) 0; }
 
-/* 90s 모노톤 카드 */
 .card {
   border: 0px solid #e5e7eb;
   background: #fff;
   padding: clamp(16px, 4vw, 24px);
 }
 
-/* 보조 텍스트 */
 .muted { color: #6b7280; }
 
-/* 단순 인풋/버튼 */
 .input {
   width: 100%;
   border: 0px solid #e5e7eb;
@@ -289,19 +284,16 @@ img { max-width: 100%; height: auto; display: block; }
 .button.primary { background: #111; color: #fff; }
 
 /* 앱 콘텐츠가 배경 위에 오도록 보장 */
-.app-root { position: relative; z-index: 1; }
+.app-root { position: relative; z-index: 2; }
 
-/* 홈 배경 고정 레이어 (모바일 안정화) */
+/* 홈 배경 고정 레이어 */
 #home-bg-layer {
   position: fixed;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   pointer-events: none;
-  
-  /* 진입 시 바로 페이드인 */
   animation: fadeInBg 0.8s ease-out forwards;
 }
-
 
 #home-bg-layer img {
   width: 100%;
@@ -310,38 +302,55 @@ img { max-width: 100%; height: auto; display: block; }
   display: block;
 }
 
-/* 페이드인 애니메이션 */
 @keyframes fadeInBg {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-
-
-/* 기본 바탕 (배경이 없을 때 흰색) */
 html, body { background: #fff; }
 
-/* Route Transition 애니메이션 (0.15s로 단축) */
+/* ✅ [data-page] — 전환 중에만 transition 적용, 자식 전파 제거 */
 [data-page] { will-change: opacity; }
 
-@keyframes rt-fade-out { from {opacity:1} to {opacity:0} }
-@keyframes rt-fade-in  { from {opacity:0} to {opacity:1} }
+body[data-route="leaving"] [data-page],
+body[data-route="entering"] [data-page] {
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
 
-body[data-route="leaving"]  [data-page] { animation: rt-fade-out 0.15s ease-out both; }
-body[data-route="entering"] [data-page] { animation: rt-fade-in 0.15s ease-in both; }
-body[data-route="idle"]     [data-page] { opacity: 1; }
+body[data-route="leaving"] [data-page]  { opacity: 0; }
+body[data-route="entering"] [data-page] { animation: fadeIn 0.12s ease-in forwards; }
+body[data-route="idle"] [data-page]     { opacity: 1; }
 
-/* 마우스가 있는 환경에서만 hover 활성화 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ✅ main — contain 제거 (모달 fixed 레이어/ResizeObserver 오작동 방지) */
+main { min-height: 100vh; }
+
+/* 모바일 배경 오버레이 */
+#home-bg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(8px);
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+#home-bg-overlay.visible { opacity: 1; }
+
+/* ✅ 마우스 환경에서만 hover — will-change는 hover 시에만 활성화 */
 @media (hover: hover) and (pointer: fine) {
   .patterned-block .masonry-img {
     transition: transform 160ms ease-out;
-    will-change: transform;
   }
   .patterned-block .masonry-img:hover {
+    will-change: transform;
     transform: scale(1.03);
   }
 }
@@ -363,113 +372,9 @@ body[data-route="idle"]     [data-page] { opacity: 1; }
 }
 
 @media (max-width: 1024px) {
-  .articles-grid .article-card {
-    width: calc(45% - 10px);
-  }
+  .articles-grid .article-card { width: calc(45% - 10px); }
 }
 
 @media (max-width: 640px) {
-  .articles-grid .article-card {
-    width: 100%;
-  }
-}
-
-
-/* 모바일 배경 오버레이 */
-#home-bg-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.3); /* 흰색 70% 불투명 */
-  backdrop-filter: blur(8px); /* 배경 블러 효과 (선택사항) */
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-
-#home-bg-overlay.visible {
-  opacity: 1;
-}
-
-/* 배경보다 위, 콘텐츠보다 아래 */
-#home-bg-layer { z-index: 0; }
-#home-bg-overlay { z-index: 1; }
-.app-root { z-index: 2; }
-
-
-/* globals.css 하단에 추가 */
-
-/* Route Transition 애니메이션 - 페이드 효과 */
-body[data-route="leaving"] [data-page] {
-  opacity: 0;
-  transition: opacity 0.12s ease-out;
-}
-
-body[data-route="entering"] [data-page] {
-  opacity: 0;
-  animation: fadeIn 0.12s ease-in forwards;
-}
-
-body[data-route="idle"] [data-page] {
-  opacity: 1;
-  transition: opacity 0.12s ease-in;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* 레이아웃 시프트 방지 */
-main {
-  min-height: 100vh;
-  contain: layout style paint;
-}
-
-/* 이미지 로딩 최적화 */
-img {
-  image-rendering: auto;
-  image-rendering: crisp-edges;
-  image-rendering: -webkit-optimize-contrast;
-}
-
-img[loading="lazy"] {
-  content-visibility: auto;
-}
-
-/* 페이지 전환 중 부드러운 처리 */
-[data-page] {
-  will-change: opacity;
-  transition: opacity 0.12s ease;
-}
-
-body[data-route="leaving"] [data-page],
-body[data-route="entering"] [data-page] {
-  pointer-events: none;
-}
-
-/* 추가: 모든 페이지 요소에 페이드 적용 */
-[data-page] > * {
-  transition: inherit;
-}
-
-/* globals.css에 추가 */
-
-/* 이미지 로딩 애니메이션 */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-/* 이미지 최적화 */
-img {
-  content-visibility: auto;
+  .articles-grid .article-card { width: 100%; }
 }
