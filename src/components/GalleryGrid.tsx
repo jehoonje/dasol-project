@@ -1,37 +1,35 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ImageModal from "./ImageModal";
 import Image from "next/image";
 
 type ArticleImage = { id: string; image_url: string; sort_order: number };
 
-/**
- * Masonry(Grid row span) + 반응형
- * - 모바일에서도 2~3열 유지: min width를 clamp(96px, 30vw, 180px)로 낮춰 auto-fill이 1열로 무너지지 않게 함
- * - auto-fit으로 변경하여 실제 아이템 개수만큼만 열 생성, 빈 공간 없이 가로 전체 사용
- */
 export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
   const [open, setOpen] = useState(false);
   const [src, setSrc] = useState<string | null>(null);
 
-  // 간격/행단위(px)
   const GAP = 12;
   const ROW_HEIGHT = 8;
 
-  // 각 카드(wrapper) DOM을 보관
   const wrappersRef = useRef<Record<string, HTMLDivElement | null>>({});
-  const setWrapperRef = (id: string) => (el: HTMLDivElement | null) => {
-    wrappersRef.current[id] = el;
-  };
 
-  // 각 카드의 grid-row-end: span N 값을 상태로 보관
+  // ✅ setWrapperRef를 useCallback으로 안정화 — 렌더마다 새 함수 생성 방지 (unmount/remount 글리치 차단)
+  const setWrapperRef = useCallback(
+    (id: string) => (el: HTMLDivElement | null) => {
+      wrappersRef.current[id] = el;
+    },
+    []
+  );
+
   const [spans, setSpans] = useState<Record<string, number>>({});
 
-  // ✅ 반응형 열 정의
-  // - 2장이면 2열 정확히 분할
-  // - 3장 이상이면 min width를 clamp로 낮춰 모바일에서도 2~3열 유지
-  // - auto-fit으로 변경하여 실제 아이템 개수만큼만 열 생성, 빈 공간 없이 가로 전체 사용
+  // ✅ images 변경 시 spans 초기화 — 블록 추가/삭제 후 레이아웃 틀어짐 방지
+  useEffect(() => {
+    setSpans({});
+  }, [images]);
+
   const gridTemplateColumns = useMemo(() => {
     if (!images || images.length === 0)
       return "repeat(auto-fit, minmax(clamp(96px, 30vw, 180px), 1fr))";
@@ -39,32 +37,49 @@ export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
     return "repeat(auto-fit, minmax(clamp(96px, 30vw, 180px), 1fr))";
   }, [images]);
 
-  const recalcSpans = () => {
+  // ✅ useCallback으로 안정화 + 실제 변경 시에만 setState (ResizeObserver 무한루프 차단)
+  const recalcSpans = useCallback(() => {
     const next: Record<string, number> = {};
     for (const im of images) {
       const el = wrappersRef.current[im.id];
       if (!el) continue;
-      const h = el.getBoundingClientRect().height;
-      const span = Math.ceil((h + GAP) / (ROW_HEIGHT + GAP));
-      next[im.id] = span;
+      // wrapper 대신 img 태그의 높이를 읽어 계산 (wrapper 높이 변경 → RO 재발동 루프 차단)
+      const imgEl = el.querySelector("img");
+      if (!imgEl) continue;
+      const h = imgEl.getBoundingClientRect().height;
+      if (h === 0) continue;
+      next[im.id] = Math.ceil((h + GAP) / (ROW_HEIGHT + GAP));
     }
-    setSpans(next);
-  };
+
+    // ✅ 값이 실제로 바뀔 때만 setState — 루프 완전 차단
+    setSpans((prev) => {
+      const changed = images.some((im) => prev[im.id] !== next[im.id]);
+      return changed ? next : prev;
+    });
+  }, [images]);
+
+  // ✅ onLoad 후 requestAnimationFrame으로 한 프레임 뒤에 계산 — 레이아웃 미완성 시점 계산 방지
+  const scheduleRecalc = useCallback(() => {
+    requestAnimationFrame(recalcSpans);
+  }, [recalcSpans]);
 
   useEffect(() => {
     recalcSpans();
+
     const ro = new ResizeObserver(recalcSpans);
     for (const im of images) {
       const el = wrappersRef.current[im.id];
-      if (el) ro.observe(el);
+      // ✅ wrapper가 아닌 img를 observe — wrapper는 span 변경으로 크기가 바뀌어 루프 발생
+      const imgEl = el?.querySelector("img");
+      if (imgEl) ro.observe(imgEl);
     }
-    const onResize = () => recalcSpans();
-    window.addEventListener("resize", onResize);
+
+    window.addEventListener("resize", recalcSpans);
     return () => {
       ro.disconnect();
-      window.removeEventListener("resize", onResize);
+      window.removeEventListener("resize", recalcSpans);
     };
-  }, [images]);
+  }, [images, recalcSpans]);
 
   return (
     <>
@@ -99,12 +114,12 @@ export default function GalleryGrid({ images }: { images: ArticleImage[] }) {
               <Image
                 src={img.image_url}
                 alt=""
-                width={800}    // 필수 속성 추가
-                height={800}   // 필수 속성 추가
+                width={800}
+                height={800}
                 sizes="(max-width: 768px) 50vw, 33vw"
                 className="masonry-img"
                 style={{ width: "100%", height: "auto", display: "block" }}
-                onLoad={recalcSpans}
+                onLoad={scheduleRecalc}
               />
             </button>
           </div>
