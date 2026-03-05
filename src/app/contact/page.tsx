@@ -128,7 +128,7 @@ export default function ContactPage() {
         
         {/* 헤더 및 수정 버튼 영역 */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h1>Contact</h1>
+          {/* <h1>Contact</h1> */}
           {/* 💡 isOwner가 true일 때만 수정 버튼이 렌더링됩니다. */}
           {isOwner && !isEditing && (
             <button 
